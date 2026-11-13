@@ -1,0 +1,43 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 71,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "BackupStale",
+      "firstPendingTs": 1794571418848,
+      "firstFiringTs": 1794574980884,
+      "resolvedTs": null
+    },
+    {
+      "name": "DatabaseDown",
+      "firstPendingTs": 1794575004848,
+      "firstFiringTs": 1794575008890,
+      "resolvedTs": 1794575028897
+    },
+    {
+      "name": "DatabaseNoWriter",
+      "firstPendingTs": 1794575004848,
+      "firstFiringTs": 1794575008890,
+      "resolvedTs": 1794575030897
+    },
+    {
+      "name": "DatabaseRedundancyLost",
+      "firstPendingTs": 1794575030848,
+      "firstFiringTs": null,
+      "resolvedTs": null
+    },
+    {
+      "name": "HighErrorRate",
+      "firstPendingTs": 1794575014848,
+      "firstFiringTs": 1794575020892,
+      "resolvedTs": 1794575026896
+    },
+    {
+      "name": "HighLatencyP95",
+      "firstPendingTs": 1794575028848,
+      "firstFiringTs": 1794575034898,
+      "resolvedTs": 1794575038904
+    }
+  ]
+}

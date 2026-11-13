@@ -1,0 +1,19 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 71,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "BackupStale",
+      "firstPendingTs": 1794571418848,
+      "firstFiringTs": 1794575186049,
+      "resolvedTs": null
+    },
+    {
+      "name": "HighLatencyP95",
+      "firstPendingTs": 1794575218848,
+      "firstFiringTs": 1794575225065,
+      "resolvedTs": 1794575237080
+    }
+  ]
+}

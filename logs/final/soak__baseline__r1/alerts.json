@@ -1,0 +1,55 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 601,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "BackupStale",
+      "firstPendingTs": 1794571418848,
+      "firstFiringTs": 1794573838182,
+      "resolvedTs": null
+    },
+    {
+      "name": "DatabaseDown",
+      "firstPendingTs": 1794573990848,
+      "firstFiringTs": 1794573995325,
+      "resolvedTs": 1794574257626
+    },
+    {
+      "name": "DatabaseNoWriter",
+      "firstPendingTs": 1794573992848,
+      "firstFiringTs": 1794573997325,
+      "resolvedTs": 1794574257626
+    },
+    {
+      "name": "DatabaseRedundancyLost",
+      "firstPendingTs": 1794574016848,
+      "firstFiringTs": null,
+      "resolvedTs": null
+    },
+    {
+      "name": "HighErrorRate",
+      "firstPendingTs": 1794573872848,
+      "firstFiringTs": 1794573879242,
+      "resolvedTs": 1794574385662
+    },
+    {
+      "name": "HighLatencyP95",
+      "firstPendingTs": 1794574018848,
+      "firstFiringTs": 1794574127426,
+      "resolvedTs": 1794574265625
+    },
+    {
+      "name": "InstanceDown",
+      "firstPendingTs": 1794573870848,
+      "firstFiringTs": 1794573875220,
+      "resolvedTs": 1794574377659
+    },
+    {
+      "name": "PaymentsStuckPending",
+      "firstPendingTs": 1794574366848,
+      "firstFiringTs": 1794574377659,
+      "resolvedTs": null
+    }
+  ]
+}

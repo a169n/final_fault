@@ -1,0 +1,19 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 91,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "BackupStale",
+      "firstPendingTs": 1794571418848,
+      "firstFiringTs": 1794573614156,
+      "resolvedTs": null
+    },
+    {
+      "name": "PaymentRecordsLost",
+      "firstPendingTs": 1794573656848,
+      "firstFiringTs": 1794573657162,
+      "resolvedTs": 1794573667164
+    }
+  ]
+}
