@@ -845,8 +845,8 @@ for both configurations.
 | E13 | standby-failure | 2 | FAIL (0/1) | **PASS (3/3)** |
 | | **Scenarios passed** | | **1 / 13** | **13 / 13** |
 
-The baseline's E8 and E13 fail only on alert criteria affected by an artefact (§10.4, item 1);
-on the scenario's own measures they behave like final.
+The baseline's E8 fails only on its alert criterion, which is affected by an artefact (§10.4,
+item 1). Its E13 shows no outage either and fails on duplicate charges.
 
 ### 10.2 Consolidated results
 
