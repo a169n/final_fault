@@ -28,7 +28,7 @@ _replica = (
 )
 
 
-# H6 (final): which node takes the writes. Index into _node_pools(); 0 is the configured primary. The other
+# H8 (final): which node takes the writes. Index into _node_pools(); 0 is the configured primary. The other
 # modes never change it, so they keep writing to DATABASE_URL exactly as before.
 def _node_pools() -> List[AsyncConnectionPool]:
     return [_primary] + ([_replica] if _replica is not None else [])
@@ -70,7 +70,7 @@ async def _probe(pool: AsyncConnectionPool) -> Optional[db_failover.NodeState]:
 
 
 async def refresh_writer() -> None:
-    """Ask both nodes for their role and route writes to the one pick_writer chooses (H6)."""
+    """Ask both nodes for their role and route writes to the one pick_writer chooses (H8)."""
     global _writer_index
     states = dict(zip(_node_names, await asyncio.gather(*(_probe(p) for p in _node_pools()))))
     chosen = db_failover.pick_writer(states)
@@ -150,7 +150,7 @@ async def read_primary(sql: str, params: Sequence[Any] = ()) -> List[Row]:
         raise UpstreamError(str(exc), 503) from exc
 
 
-async def write(sql: str, params: Sequence[Any] = ()) -> List[Row]:  # the writer only (H6: wherever it is)
+async def write(sql: str, params: Sequence[Any] = ()) -> List[Row]:  # the writer only (H8: wherever it is)
     try:
         return await _query(_writer(), sql, params)
     except Exception as exc:

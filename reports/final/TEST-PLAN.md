@@ -36,8 +36,8 @@ One code base and one image; the mode is a set of environment switches written b
 | Gateway: health checks, retry + backoff, timeouts, circuit breaker, stale-cache degradation, outlier ejection | off | on |
 | Payment: idempotency keys, checkpoint + rollback sweep | off | on |
 | Reads from the standby | off | on |
-| Automatic DB failover, fencing, synchronous replication (H6) | off (controller observes only) | on |
-| Backups (H7) | off | every 15 s, verified, 20 kept |
+| Automatic DB failover, fencing, synchronous replication (H8) | off (controller observes only) | on |
+| Backups (H9) | off | every 15 s, verified, 20 kept |
 | Authentication, authorization, validation, rate limiting, audit, chaos token | off | on |
 | DB wait before a service gives up | 60 s | 0.5 s (nested inside the 0.8 s gateway attempt) |
 

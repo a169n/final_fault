@@ -292,7 +292,7 @@ async function instancesUp(before: ContainerState[] | null): Promise<{ allUpAfte
 
 // E2: the node that accepts writes is stopped. Baseline: every DB-backed route fails until the
 // operator restarts it. Midterm/endterm: reads move to the standby, writes fail fast until the repair.
-// Final: the controller promotes the standby (H6), so writes come back before the repair; the repair
+// Final: the controller promotes the standby (H8), so writes come back before the repair; the repair
 // then restarts the old primary, which rejoins as a standby (config/postgres/scripts/node.sh).
 function dbFailure(): Scenario {
   let stopped = 'postgres-primary';
@@ -322,7 +322,7 @@ function dbFailure(): Scenario {
 
 // E11: the payment records are destroyed by a privileged statement (an operator error, a bad
 // migration or a compromised superuser): TRUNCATE payments and every balance set to 0. Replication
-// copies the damage to the standby at once, so redundancy does not help; only a backup does (H7).
+// copies the damage to the standby at once, so redundancy does not help; only a backup does (H9).
 // Repair: restore the newest backup and merge it back (experiments/restore.ts). Baseline, midterm
 // and endterm take no backups, so there is nothing to restore and the records stay lost.
 const ACKED_PAYMENT = (r: Rec) => r.op === 'payments' && (r.status === 201 || (r.status === 200 && r.payState === 'completed'));

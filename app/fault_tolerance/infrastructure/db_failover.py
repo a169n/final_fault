@@ -1,8 +1,8 @@
-"""H2 read failover to the standby, and H6 writer discovery after an automatic failover.
+"""H2 read failover to the standby, and H8 writer discovery after an automatic failover.
 
 H2 (midterm): a read that fails on the primary is answered by the hot standby.
 
-H6 (final): the database controller (``app/services/db_controller.py``) promotes the standby when
+H8 (final): the database controller (``app/services/db_controller.py``) promotes the standby when
 the primary is gone. The services then have to find the new primary on their own. Each service
 asks both nodes for their role once a second (``PROBE_SQL``) and ``pick_writer`` chooses where
 writes go. The rule also fences a stale primary without any coordination: of the nodes that accept

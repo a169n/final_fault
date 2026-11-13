@@ -1,5 +1,5 @@
 # CI: unit tests, harness tests, configuration checks, dependency audit, and the integration suite
-# against a real endterm stack. Everything runs on synthetic data and on the runner's own stack only.
+# against a real final stack. Everything runs on synthetic data and on the runner's own stack only.
 name: ci
 
 on:
@@ -48,9 +48,9 @@ jobs:
           node-version: "22"
       # docker-compose.yml requires the generated secrets (${VAR:?}), so write a throwaway .env with
       # experiments/env.ts first (random values, never uploaded), then render every mode.
-      - name: docker compose config (baseline, midterm, endterm)
+      - name: docker compose config (baseline, midterm, endterm, final)
         run: |
-          for mode in baseline midterm endterm; do
+          for mode in baseline midterm endterm final; do
             npm run --silent env -- "$mode"
             docker compose config -q
             echo "compose config ok: $mode"
@@ -109,12 +109,12 @@ jobs:
         with:
           node-version: "22"
       - run: pip install -r requirements-dev.txt -c constraints.txt
-      - name: npm run up:endterm
-        run: npm run up:endterm
-      - name: wait for the endterm stack
+      - name: npm run up:final
+        run: npm run up:final
+      - name: wait for the final stack
         run: |
           for i in $(seq 1 90); do
-            if curl -fsS http://localhost:8080/health | grep -q '"mode":"endterm"'; then
+            if curl -fsS http://localhost:8080/health | grep -q '"mode":"final"'; then
               echo "stack healthy after ~$((i * 2)) s"; exit 0
             fi
             sleep 2

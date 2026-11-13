@@ -1,4 +1,4 @@
-"""H6: the database controller's policy (decide) and the writer rule (pick_writer), without a database."""
+"""H8: the database controller's policy (decide) and the writer rule (pick_writer), without a database."""
 import os
 
 os.environ.setdefault("LOG_DIR", "/tmp/ft-test-logs")

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Backup sidecar (H7). Every BACKUP_INTERVAL_S seconds: pg_dump the database in custom format, check
+# Backup sidecar (H9). Every BACKUP_INTERVAL_S seconds: pg_dump the database in custom format, check
 # that the archive is readable, write its SHA-256 next to it and record it in latest.json.
 # The dump is taken from the current primary; if there is none, from the standby (pg_dump works on a
 # hot standby), so a backup is still taken while the database is failed over or read-only.

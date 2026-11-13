@@ -1,4 +1,4 @@
-"""Database controller: observes both PostgreSQL nodes and, in final mode, acts on what it sees (H6).
+"""Database controller: observes both PostgreSQL nodes and, in final mode, acts on what it sees (H8).
 
 Every second it asks each node for its role (``NodeState``). In every mode it only exports that
 picture as metrics, so the database is observed the same way in baseline and in final. With

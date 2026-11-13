@@ -1,4 +1,4 @@
-// Restore from the newest backup (H7). An operator action, run as the superuser over docker exec.
+// Restore from the newest backup (H9). An operator action, run as the superuser over docker exec.
 //   npm run db:restore                 verify + merge the newest backup into the live database
 //   npm run db:restore -- --verify     verify only: checksum, restore into a scratch database, check it
 //   npm run db:restore -- --before 2026-11-13T10:26:20Z   the newest backup taken before that time

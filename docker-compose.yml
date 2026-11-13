@@ -130,7 +130,7 @@ services:
 
   # The two database nodes run the same start script (config/postgres/scripts/node.sh), so either
   # can be primary or standby. Baseline, midterm and endterm never swap them. In final the database
-  # controller promotes the standby when the primary is gone (H6), and a stale primary that is
+  # controller promotes the standby when the primary is gone (H8), and a stale primary that is
   # started again rebuilds itself as a standby of the new primary.
   postgres-primary:                         # H2: the primary at first start
     image: postgres:16
@@ -173,7 +173,7 @@ services:
     ports: ["127.0.0.1:55433:5432"]
     healthcheck: *pg-health
 
-  # H6: observes both nodes in every mode (metrics only); in final it also promotes the standby,
+  # H8: observes both nodes in every mode (metrics only); in final it also promotes the standby,
   # fences a stale primary and switches synchronous replication (app/services/db_controller.py).
   db-controller:
     <<: *service
@@ -192,7 +192,7 @@ services:
       - ./backups:/backups:ro               # reads latest.json for backup_last_success_timestamp_seconds
     ports: ["127.0.0.1:3061:3000"]
 
-  # H7: periodic verified pg_dump (config/postgres/scripts/backup.sh). Enabled only in final.
+  # H9: periodic verified pg_dump (config/postgres/scripts/backup.sh). Enabled only in final.
   db-backup:
     image: postgres:16
     restart: unless-stopped

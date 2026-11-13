@@ -30,7 +30,7 @@ def endterm_enabled() -> bool:
 
 
 def final_enabled() -> bool:
-    # final builds on endterm: automatic DB failover (H6), backups (H7), nested timeouts
+    # final builds on endterm: automatic DB failover (H8), backups (H9), nested timeouts
     return endterm_enabled() and os.environ.get("FINAL_ENABLED") == "1"
 
 

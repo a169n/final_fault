@@ -1,7 +1,8 @@
-"""End-to-end tests against the running endterm stack (docker compose).
+"""End-to-end tests against the running stack (docker compose) in endterm or final mode.
 
-Run with the stack up:  npm run up:endterm && python3 -m pytest -m integration -q
-Every test skips unless GET {STACK_URL}/health reports mode == "endterm", so a local run without
+Run with the stack up:  npm run up:final && python3 -m pytest -m integration -q
+(final contains every endterm control; test_stack_failover.py adds the final-only ones.)
+Every test skips unless GET {STACK_URL}/health reports mode "endterm" or "final", so a local run without
 the stack never fails because nothing is listening. With STACK_REQUIRED=1 (the CI integration job)
 an unreachable stack is a failure instead, so the suite cannot pass by skipping.
 
@@ -55,7 +56,7 @@ def _dotenv() -> Dict[str, str]:
 def _secret(name: str) -> str:
     value = os.environ.get(name) or _dotenv().get(name)
     if not value:
-        _unavailable(f"{name} not found in the environment or .env (run npm run up:endterm)")
+        _unavailable(f"{name} not found in the environment or .env (run npm run up:final)")
     return value
 
 
@@ -65,9 +66,9 @@ def client() -> Iterator[httpx.Client]:
         try:
             health = c.get("/health").json()
         except (httpx.HTTPError, ValueError):
-            _unavailable(f"no stack at {STACK_URL} (run npm run up:endterm)")
-        if health.get("mode") != "endterm":
-            _unavailable(f"stack at {STACK_URL} is in mode {health.get('mode')!r}, not endterm")
+            _unavailable(f"no stack at {STACK_URL} (run npm run up:final)")
+        if health.get("mode") not in ("endterm", "final"):
+            _unavailable(f"stack at {STACK_URL} is in mode {health.get('mode')!r}, not endterm or final")
         yield c
 
 

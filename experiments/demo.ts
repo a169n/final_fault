@@ -390,7 +390,7 @@ async function dbFailure(ctx: Ctx) {
   console.log(`  after    ${await line(10)}`);
 }
 
-// H6: per-second view of payments while the primary is stopped and later started again.
+// H8: per-second view of payments while the primary is stopped and later started again.
 async function dbFailover(ctx: Ctx) {
   const auth = await authHeaders(ctx);
   const controller = async () => {
@@ -415,7 +415,7 @@ async function dbFailover(ctx: Ctx) {
   for (const l of events) { try { const e = JSON.parse(l); console.log(`    controller: ${e.action} ${e.node} (${e.reason})`); } catch { /* partial line */ } }
 }
 
-// H7: destroy the payment records, then restore the last backup from before the damage.
+// H9: destroy the payment records, then restore the last backup from before the damage.
 async function restoreDemo(ctx: Ctx) {
   const auth = await authHeaders(ctx);
   const ledger = async () => (await psql("select count(*) filter (where state='completed'), coalesce(sum(amount) filter (where state='completed'),0), (select sum(balance) from students) from payments")).replace(/\|/g, ' / ');
