@@ -1,9 +1,9 @@
 // Saves a PNG of the Grafana "university" dashboard over one run's time window, for the report figures.
-// Reads t0/t1 from reports/endterm/runs/<tag>/metrics.json and writes reports/endterm/figures/<tag>.png
+// Reads t0/t1 from reports/final/runs/<tag>/metrics.json and writes reports/final/figures/<tag>.png
 // (1600x1000 viewport at deviceScaleFactor 2). Needs the stack (Grafana on :3000) still holding that
 // window in Prometheus, so run it after the campaign of that mode and before `docker compose down -v`.
 // Usage: node --experimental-strip-types experiments/snapshot.ts <scenario>__<mode>__r<N> [<tag> ...]
-//          [--grafana http://localhost:3000] [--pad-ms 0] [--out reports/endterm/figures] [--full]
+//          [--grafana http://localhost:3000] [--pad-ms 0] [--out reports/final/figures] [--full]
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -14,10 +14,10 @@ export const DASHBOARD_UID = 'university';
 export const VIEWPORT = { width: 1600, height: 1000 };
 export const SCALE = 2;
 // The 1600x1000 shot shows the top three dashboard rows (traffic, latency, upstreams, health,
-// ejection). --full also saves <tag>-full.png from a viewport tall enough for all 47 grid rows
+// ejection). --full also saves <tag>-full.png from a viewport tall enough for all 54 grid rows
 // (30 px + 8 px margin each in kiosk mode), so circuit breakers, auth denials, the database and the
 // alert timeline are in the figure too.
-export const FULL_HEIGHT = 2000;
+export const FULL_HEIGHT = 2300;
 
 export function captureSpec(tag: string, full: boolean): { file: string; viewport: { width: number; height: number } } {
   return full
@@ -69,7 +69,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const { opts, tags } = args(process.argv.slice(2));
   const grafana = opts.grafana ?? 'http://localhost:3000';
   const padMs = Number(opts['pad-ms'] ?? 0);
-  const outDir = resolve(opts.out ?? join(ROOT, 'reports/endterm/figures'));
+  const outDir = resolve(opts.out ?? join(ROOT, 'reports/final/figures'));
   const bad = tags.filter((t) => !parseTag(t));
   if (tags.length === 0 || bad.length || !Number.isFinite(padMs) || padMs < 0) {
     console.log('usage: node --experimental-strip-types experiments/snapshot.ts <scenario>__<mode>__r<N> [...] ' +
@@ -85,7 +85,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const shots = opts.full ? [false, true] : [false];
     mkdirSync(outDir, { recursive: true });
     for (const tag of tags) {
-      const file = join(ROOT, 'reports/endterm/runs', tag, 'metrics.json');
+      const file = join(ROOT, 'reports/final/runs', tag, 'metrics.json');
       if (!existsSync(file)) {
         console.log(`!! ${tag}: no ${file}`);
         failed++;
