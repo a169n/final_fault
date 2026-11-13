@@ -1,0 +1,13 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 91,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "PaymentRecordsLost",
+      "firstPendingTs": 1794577230848,
+      "firstFiringTs": 1794577231625,
+      "resolvedTs": 1794577241625
+    }
+  ]
+}

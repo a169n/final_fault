@@ -1,0 +1,323 @@
+{
+  "scenario": "data-loss",
+  "title": "Data loss (payment records destroyed) and restore from backup",
+  "kind": "fault",
+  "mode": "baseline",
+  "rep": 1,
+  "runId": "data-loss-baseline-r1-1794577187600",
+  "t0": 1794577187605,
+  "t1": 1794577278116,
+  "injectTs": 1794577227606,
+  "repairTs": 1794577242606,
+  "restore": {
+    "ok": true,
+    "durationMs": 18972,
+    "healthy": true,
+    "replicationStreaming": true,
+    "chaosReset": {
+      "3011": true,
+      "3012": true,
+      "3021": true,
+      "3022": true,
+      "3031": true,
+      "3041": true,
+      "3042": true
+    },
+    "dbReset": true,
+    "alertsClear": true,
+    "firingAtStart": []
+  },
+  "abandonedAtClose": 4,
+  "expectedAlerts": {
+    "mustFire": [
+      "PaymentRecordsLost"
+    ],
+    "mayFire": []
+  },
+  "alertCorrectness": {
+    "correct": true,
+    "missing": [],
+    "unexpected": []
+  },
+  "metrics": {
+    "observationMs": 90511,
+    "requests": {
+      "total": 12825,
+      "successful": 12825,
+      "failed": 0,
+      "degraded": 0,
+      "clientTimeouts": 0,
+      "rateLimited": 0,
+      "errorRate": 0
+    },
+    "throughput": {
+      "preFaultRps": 143.646408839779,
+      "duringFaultRps": 137.86666666666667,
+      "postRepairRps": 141.1151788228668
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 1,
+      "readRequestBased": 1,
+      "writeRequestBased": 1,
+      "upBins": 90,
+      "downBins": 0,
+      "idleBins": 1,
+      "badSeconds": 0,
+      "measuredSeconds": 90
+    },
+    "writePath": {
+      "requests": 2939,
+      "failed": 0,
+      "outages": [],
+      "downtimeMs": 0,
+      "recoveryMs": null,
+      "wentDown": false
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": null,
+      "recoveryMs": null,
+      "absorptionMs": null,
+      "faultMasked": false,
+      "detectionSource": "none",
+      "avgMs": 21.712280701754388,
+      "p50Ms": 17,
+      "p95Ms": 53,
+      "p99Ms": 78,
+      "maxMs": 214
+    },
+    "mechanisms": {
+      "failedCallAttempts": 0,
+      "retriesThatSucceeded": 0,
+      "breakerOpened": 0,
+      "degradedResponses": 0,
+      "replicaReads": 0,
+      "duplicatesSuppressed": 0,
+      "checkpointsRolledBack": 0,
+      "dbPromotions": 0,
+      "dbWriterSwitches": 0,
+      "dbFenced": 0,
+      "dbSyncOff": 0,
+      "healthTransitions": []
+    },
+    "alerts": [
+      {
+        "name": "PaymentRecordsLost",
+        "fired": true,
+        "detectionMs": 4019,
+        "resolvedAfterRepairMs": -981,
+        "firstPendingTs": 1794577230848,
+        "firstFiringTs": 1794577231625,
+        "resolvedTs": 1794577241625
+      }
+    ],
+    "resources": [
+      {
+        "name": "final_fault-auth-1-1",
+        "maxCpuPct": 15.42,
+        "maxMemMiB": 69.07,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-db-backup-1",
+        "maxCpuPct": 0,
+        "maxMemMiB": 0.3984375,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-db-controller-1",
+        "maxCpuPct": 21.57,
+        "maxMemMiB": 52.09,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-gateway-1-1",
+        "maxCpuPct": 73.4,
+        "maxMemMiB": 66.27,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-gateway-2-1",
+        "maxCpuPct": 14.54,
+        "maxMemMiB": 54.65,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-grafana-1",
+        "maxCpuPct": 0.22,
+        "maxMemMiB": 45.62,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-nginx-1",
+        "maxCpuPct": 9.42,
+        "maxMemMiB": 10.73,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-payment-1-1",
+        "maxCpuPct": 22.9,
+        "maxMemMiB": 53.14,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-payment-2-1",
+        "maxCpuPct": 22.69,
+        "maxMemMiB": 55.91,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-postgres-exporter-1",
+        "maxCpuPct": 2.88,
+        "maxMemMiB": 13.91,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-postgres-exporter-replica-1",
+        "maxCpuPct": 3,
+        "maxMemMiB": 9.941,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-postgres-primary-1",
+        "maxCpuPct": 21.8,
+        "maxMemMiB": 112.7,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-postgres-replica-1",
+        "maxCpuPct": 15.48,
+        "maxMemMiB": 44.83,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-prometheus-1",
+        "maxCpuPct": 3.43,
+        "maxMemMiB": 49.06,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-student-1-1",
+        "maxCpuPct": 24.65,
+        "maxMemMiB": 55.87,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-student-2-1",
+        "maxCpuPct": 25.7,
+        "maxMemMiB": 57.12,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-timetable-1-1",
+        "maxCpuPct": 17.39,
+        "maxMemMiB": 54.01,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-timetable-2-1",
+        "maxCpuPct": 13.86,
+        "maxMemMiB": 55.29,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-transcript-1-1",
+        "maxCpuPct": 24.53,
+        "maxMemMiB": 57.12,
+        "samples": 44
+      }
+    ]
+  },
+  "consistency": {
+    "paymentRequestsSent": 2939,
+    "paymentRequestsAccepted": 2939,
+    "paymentRequestsRateLimited": 0,
+    "distinctPaymentIntents": 2435,
+    "acknowledgedIntents": 2435,
+    "deduplicatedResponses": 0,
+    "ackedNotCompleted": 0,
+    "ackedNotCompletedByState": {},
+    "ackedNotCompletedIntents": 0,
+    "duplicateCharges": 504,
+    "duplicateChargesClient": 504,
+    "duplicateChargesDb": 0,
+    "unacknowledgedIntents": 0,
+    "integrityBasis": "count",
+    "lostRecords": 1371,
+    "lostIntents": [],
+    "phantomRecords": 0,
+    "dbRows": 1568,
+    "ledgerMeasured": true,
+    "completedInDb": 1568,
+    "dbVsIntents": -867,
+    "orphanedPending": 0,
+    "rolledBack": 0,
+    "failedPay": 0,
+    "totalCharged": 156800,
+    "ledgerBalanced": true
+  },
+  "verify": {
+    "restore": {
+      "ok": false,
+      "file": null,
+      "backupFinishedMs": null,
+      "checksumOk": false,
+      "scratch": null,
+      "merged": null,
+      "durationMs": 0,
+      "writer": null,
+      "error": "no backup found in backups/ from before the given time (backups run only in final mode)"
+    },
+    "dataLoss": {
+      "wipeTs": 1794577227606,
+      "basis": "count",
+      "ackedBeforeLoss": 1139,
+      "lostAfterRestore": 1362,
+      "lossWindowMs": 39828,
+      "backupAgeAtLossMs": null,
+      "restoreDurationMs": 0
+    }
+  },
+  "acceptance": [
+    {
+      "id": "PaymentRecordsLost-detect-le-20000ms",
+      "describe": "PaymentRecordsLost fires within 20 s of the injection",
+      "pass": true
+    },
+    {
+      "id": "restore-succeeded",
+      "describe": "the newest backup passed its checksum, restored into a scratch database and was merged back",
+      "pass": false
+    },
+    {
+      "id": "loss-window-le-20000ms",
+      "describe": "acknowledged payments are missing for at most the last 20 s before the data loss (recovery point)",
+      "pass": false
+    },
+    {
+      "id": "ledger-balanced",
+      "describe": "sum of completed payments equals the sum of student balances",
+      "pass": true
+    },
+    {
+      "id": "db-duplicates-eq-0",
+      "describe": "no key is charged twice in the database after the restore",
+      "pass": true
+    },
+    {
+      "id": "availability-ge-99.9pct",
+      "describe": "request-based availability >= 99.9 %",
+      "pass": true
+    }
+  ]
+}

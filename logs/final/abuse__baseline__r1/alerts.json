@@ -1,0 +1,13 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 71,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "PaymentsStuckPending",
+      "firstPendingTs": 1794577134848,
+      "firstFiringTs": 1794577144954,
+      "resolvedTs": null
+    }
+  ]
+}

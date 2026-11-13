@@ -1,0 +1,25 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 71,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "HighErrorRate",
+      "firstPendingTs": 1794576664848,
+      "firstFiringTs": 1794576671356,
+      "resolvedTs": 1794576699374
+    },
+    {
+      "name": "InstanceDown",
+      "firstPendingTs": 1794576662848,
+      "firstFiringTs": 1794576667356,
+      "resolvedTs": 1794576691370
+    },
+    {
+      "name": "PaymentsStuckPending",
+      "firstPendingTs": 1794576690848,
+      "firstFiringTs": 1794576701374,
+      "resolvedTs": null
+    }
+  ]
+}

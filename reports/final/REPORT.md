@@ -31,16 +31,14 @@ replication, verified backups with a merge restore, and reliability calculations
 experiments.
 
 In 39 controlled runs the final configuration passed every acceptance criterion of all 13
-scenarios in all three repetitions; the baseline, in the 17 runs completed before the deadline,
-passed one scenario of 13. With the database primary stopped, payments resumed 6.8 s after the
-fault without an operator (baseline: only after the repair, 20.5 s) and no acknowledged payment was
+scenarios in all three repetitions; the baseline, run once per scenario, passed two of 13. With the database primary stopped, payments resumed 6.8 s after the
+fault without an operator (baseline: only after the repair, 20.6 s) and no acknowledged payment was
 lost in any of nine failovers. After a destructive statement the backup restore recovered 77 % of
 the payments acknowledged before it (loss window 3.8 to 13.7 s; baseline: everything lost). In the
-ten-minute soak with nine component faults, availability was 99.76 % against 85.30 %, and the
-system-level MTTF under that fault load was 292 s against 22 s. The final configuration missed its
-own 99.5 % availability objective in the run where the primary is stopped (98.81 %), the baseline
-evidence is thinner than planned (one or two repetitions), and three integration tests fail; all
-three are reported with their data.
+ten-minute soak with nine component faults, availability was 99.76 % against 91.07 %, and the
+system-level MTTF under that fault load was 292 s against 29 s. The final configuration missed its
+own 99.5 % availability objective in the run where the primary is stopped (98.81 %), and the
+baseline evidence is one repetition per scenario; both are reported with their data.
 
 **Keywords:** fault tolerance, dependability, availability, MTTF, MTTR, failover, fencing,
 synchronous replication, backup and restore, circuit breaker, idempotency, fault injection,
@@ -344,17 +342,17 @@ figure is the strict one and the request-based figure is what users experienced 
 
 | Scenario | Config. | Runs | T (s) | Failures | D (s) | MTTR (s) | MTTF (s) | MTBF (s) | A (time) | λ (1/h) |
 |---|---|---|---|---|---|---|---|---|---|---|
-| E12 soak | baseline | 1 | 524 | 13 | 240 | 18.5 | 21.8 | 40.3 | 54.20 % | 164.8 |
+| E12 soak | baseline | 1 | 526 | 13 | 155 | 11.9 | 28.5 | 40.5 | 70.53 % | 126.1 |
 | E12 soak | final | 3 | 1 800 | 6 | 46 | 7.7 | 292.3 | 300.0 | 97.44 % | 12.3 |
-| E1 app-crash | baseline | 2 | 133 | 2 | 47 | 23.5 | 43.0 | 66.5 | 64.66 % | 83.7 |
+| E1 app-crash | baseline | 1 | 65 | 1 | 22 | 22.0 | 43.0 | 65.0 | 66.15 % | 83.7 |
 | E1 app-crash | final | 3 | 210 | 0 | 0 | – | > 210 | > 210 | 100 % | 0 observed (≤ 51.4) |
-| E4 node-failure | baseline | 2 | 129 | 4 | 71 | 17.8 | 14.5 | 32.3 | 44.96 % | 248.3 |
+| E4 node-failure | baseline | 1 | 66 | 1 | 21 | 21.0 | 45.0 | 66.0 | 68.18 % | 80.0 |
 | E4 node-failure | final | 3 | 210 | 0 | 0 | – | > 210 | > 210 | 100 % | 0 observed (≤ 51.4) |
-| E7 gateway-failure | baseline | 1 | 61 | 2 | 20 | 10.0 | 20.5 | 30.5 | 67.21 % | 175.6 |
+| E7 gateway-failure | baseline | 1 | 61 | 2 | 18 | 9.0 | 21.5 | 30.5 | 70.49 % | 167.4 |
 | E7 gateway-failure | final | 3 | 210 | 0 | 0 | – | > 210 | > 210 | 100 % | 0 observed (≤ 51.4) |
-| E2 db-failure | baseline | 2 | 90 | 5 | 5 | 1.0 | 17.0 | 18.0 | 94.44 % | 211.8 |
+| E2 db-failure | baseline | 1 | 44 | 3 | 3 | 1.0 | 13.7 | 14.7 | 93.18 % | 263.4 |
 | E2 db-failure | final | 3 | 210 | 3 | 25 | 8.3 | 61.7 | 70.0 | 88.10 % | 58.4 |
-| E5 txn-interrupt | baseline | 1 | 69 | 1 | 27 | 27.0 | 42.0 | 69.0 | 60.87 % | 85.7 |
+| E5 txn-interrupt | baseline | 1 | 68 | 1 | 25 | 25.0 | 43.0 | 68.0 | 63.24 % | 83.7 |
 | E5 txn-interrupt | final | 3 | 210 | 3 | 19 | 6.3 | 63.7 | 70.0 | 90.95 % | 56.5 |
 
 Interpretation:
@@ -364,11 +362,12 @@ Interpretation:
   other seven fault types were masked in every run.
 - **MTTR.** Where a failure still occurs in final it lasts 6 to 8 s, set by the mechanisms
   (three probes, the promotion, the 5 s circuit-breaker cool-down). In the baseline it lasts until
-  the operator acts: 18 to 27 s here, because the experiment's operator reacts after 25 s.
-- **The baseline's E2 row is misleading and is kept for that reason.** T is 90 s for two 70 s runs
-  and D is 5 s: with the database down the baseline's clients hang for their full 10 s timeout, so
-  most seconds hold no completed request and are not counted at all. The baseline served 1.4 to
-  1.8 successful requests per second during the fault; final served 125 to 133. A closed-loop
+  the operator acts: 21 to 25 s in the single-fault runs, because the experiment's operator reacts
+  after 25 s.
+- **The baseline's E2 row is misleading and is kept for that reason.** T is 44 s for a 70 s run
+  and D is 3 s: with the database down the baseline's clients hang for their full 10 s timeout, so
+  most seconds hold no completed request and are not counted at all. The baseline served 2.3
+  successful requests per second during the fault; final served 125 to 133. A closed-loop
   workload flatters a system that hangs [5]; §10.4 returns to this.
 - **Zero observed failures is not zero failure rate.** For the fully masked scenarios the honest
   statement is the bound: at most 51 failures per hour of such fault load, at 95 % confidence.
@@ -379,13 +378,13 @@ This subsection is a model, not a measurement. It asks what the redundancy struc
 every component failed independently with the same, **explicitly illustrative** MTTF of 30 days,
 using the measured restore times as MTTR.
 
-- Component availability: A_c = MTTF / (MTTF + MTTR). Baseline: 2 592 000 / (2 592 000 + 18.5) =
-  0.9999929. Final: 2 592 000 / (2 592 000 + 7.7) = 0.9999970.
+- Component availability: A_c = MTTF / (MTTF + MTTR). Baseline: 2 592 000 / (2 592 000 + 11.9) =
+  0.9999954. Final: 2 592 000 / (2 592 000 + 7.7) = 0.9999970.
 - Series: A = Π A_i. Parallel: A = 1 − Π (1 − A_i).
 
 | Configuration | Structure | A (model) | Downtime per year (model) |
 |---|---|---|---|
-| baseline | series of 8: nginx, gateway, student ×2, payment ×2, transcript, database | 99.99430 % | 29.9 min |
+| baseline | series of 8: nginx, gateway, student ×2, payment ×2, transcript, database | 99.99632 % | 19.3 min |
 | final | nginx · (gateway ∥ gateway) · (student ∥ student) · (payment ∥ payment) · (db ∥ db) · transcript | 99.99941 % | 3.1 min |
 
 In the final structure almost all of the modelled downtime comes from the two components that
@@ -730,8 +729,8 @@ The plan is [`TEST-PLAN.md`](TEST-PLAN.md); this section summarises it.
 | Unit, Python | 424 tests | each mechanism and control in isolation | `python3 -m pytest -q tests/unit` |
 | Unit, harness | 104 tests | the metric, reliability, acceptance and aggregation code is right | `npm run test:harness` |
 | Alert rules | 11 rules, 32 cases | each rule fires when it should and not otherwise | `npm run test:alerts` |
-| Integration | 22 (19 pass, 3 fail: §10.4) tests | the running stack end to end, including a real failover and a restore | `npm run test:integration` |
-| System experiments | 13 scenarios × 3 repetitions (final), 17 runs (baseline) | whether the objectives are met | `npm run campaign -- --reps 3` |
+| Integration | 22 tests | the running stack end to end, including a real failover and a restore | `npm run test:integration` |
+| System experiments | 13 scenarios × 3 repetitions (final), × 1 (baseline) | whether the objectives are met | `npm run campaign -- --reps 3` |
 
 The harness is tested because the results depend on it: a wrong percentile or a wrong outage
 boundary would be a wrong result. The reliability formulas of §5 have their own tests
@@ -818,10 +817,13 @@ do not support significance tests, and differences are interpreted accordingly.
 All tables: [`RESULTS.md`](RESULTS.md) (generated). Values are means over the repetitions.
 
 **Completeness.** The final configuration has 3 repetitions of all 13 scenarios (39 runs). The
-baseline campaign was stopped by the submission deadline after 17 runs: every scenario once, and
-E1 to E4 twice. Baseline values are therefore from one or two runs and carry no spread; `n` is
-given in every table. The comparison with the intermediate endterm configuration that the test
-plan announced was not run.
+baseline has **one** repetition of each scenario (13 runs): a first baseline campaign was discarded
+because of a monitoring defect (§10.4, item 1) and the repeat was limited to one repetition for
+lack of time. Baseline values therefore carry no spread, and the two baseline soak runs that exist
+(the discarded one and the counted one) differ by six points of availability, which shows how much
+a single baseline run can move. Where the difference between the configurations is small, no
+conclusion is drawn. The intermediate endterm configuration was not re-run; §10.9 cites the endterm
+campaign instead.
 
 ### 10.1 Acceptance: pass or fail per scenario
 
@@ -830,58 +832,60 @@ for both configurations.
 
 | # | Scenario | Matrix row | baseline | final |
 |---|---|---|---|---|
-| E1 | app-crash | 1 | FAIL (0/2) | **PASS (3/3)** |
-| E2 | db-failure | 2, 8 | FAIL (0/2) | **PASS (3/3)** |
-| E3 | net-timeout | 3 | FAIL (0/2) | **PASS (3/3)** |
-| E4 | node-failure | 1 | FAIL (0/2) | **PASS (3/3)** |
+| E1 | app-crash | 1 | FAIL (0/1) | **PASS (3/3)** |
+| E2 | db-failure | 2, 8 | FAIL (0/1) | **PASS (3/3)** |
+| E3 | net-timeout | 3 | FAIL (0/1) | **PASS (3/3)** |
+| E4 | node-failure | 1 | FAIL (0/1) | **PASS (3/3)** |
 | E5 | txn-interrupt | 4 | FAIL (0/1) | **PASS (3/3)** |
 | E6 | high-load | 5 | PASS (1/1) | **PASS (3/3)** |
 | E7 | gateway-failure | 1 | FAIL (0/1) | **PASS (3/3)** |
-| E8 | error-spike | 6 | FAIL (0/1) | **PASS (3/3)** |
+| E8 | error-spike | 6 | PASS (1/1) | **PASS (3/3)** |
 | E9 | unauthorized-access | 7 | FAIL (0/1) | **PASS (3/3)** |
 | E10 | abuse | 7 | FAIL (0/1) | **PASS (3/3)** |
 | E11 | data-loss | 8 | FAIL (0/1) | **PASS (3/3)** |
 | E12 | soak | 8 | FAIL (0/1) | **PASS (3/3)** |
 | E13 | standby-failure | 2 | FAIL (0/1) | **PASS (3/3)** |
-| | **Scenarios passed** | | **1 / 13** | **13 / 13** |
+| | **Scenarios passed** | | **2 / 13** | **13 / 13** |
 
-The baseline's E8 fails only on its alert criterion, which is affected by an artefact (§10.4,
-item 1). Its E13 shows no outage either and fails on duplicate charges.
+The baseline passes E6 and E8 because their criteria do not discriminate: nothing fails under
+load in either configuration, and the alerting that E8 tests is on in both. Its E13 shows no
+outage and fails only on duplicate charges.
 
 ### 10.2 Consolidated results
 
 | Scenario | Availability (request) | | Payment availability | | p95 latency (ms) | | Duplicate charges, all runs | |
 |---|---|---|---|---|---|---|---|---|
 | | baseline | final | baseline | final | baseline | final | baseline | final |
-| E1 app-crash | 92.04 % | **100 %** | 100 % | 100 % | 46 | 43 | 658 | **0** |
-| E2 db-failure | 99.29 % † | 98.81 % | 99.33 % † | 94.81 % | 52 | 46 | 439 | **0** |
-| E3 net-timeout | 100 % † | 100 % | 100 % | 100 % | 49 | 45 | 543 | **0** |
-| E4 node-failure | 83.37 % | **100 %** | 83.10 % | **100 %** | 46 | 43 | 452 | **0** |
-| E5 txn-interrupt | 92.37 % | 97.95 % | – | 91.19 % | 53 | 46 | 222 | **0** |
-| E6 high-load | 100 % | 100 % | 100 % | 100 % | 677 | 680 | 463 | **0** |
-| E7 gateway-failure | 61.69 % | **100 %** | 62.88 % | **100 %** | 50 | 45 | 217 | **0** |
-| E8 error-spike | 69.12 % | 90.38 % | 62.34 % | 58.78 % | 47 | 40 | 271 | **0** |
-| E9 unauthorized | 100 % | 100 % | 100 % | 100 % | 69 | 47 | 386 | **0** |
-| E10 abuse | 100 % | 100 % | 100 % | 100 % | 55 | 48 | 403 | **0** |
-| E11 data-loss | 100 % | 100 % | 100 % | 100 % | 48 | 47 | 497 | 1 ‡ |
-| E12 soak | 85.30 % | **99.76 %** | 85.42 % | **98.96 %** | 52 | 47 | 2 076 | **0** |
-| E13 standby-failure | 99.99 % | 100 % | 100 % | 100 % | 49 | 46 | 376 | **0** |
+| E1 app-crash | 92.20 % | **100 %** | 100 % | 100 % | 39 | 43 | 300 | **0** |
+| E2 db-failure | 99.42 % † | 98.81 % | 99.53 % † | 94.81 % | 48 | 46 | 199 | **0** |
+| E3 net-timeout | 100 % † | 100 % | 100 % | 100 % | 50 | 45 | 256 | **0** |
+| E4 node-failure | 92.29 % | **100 %** | 89.84 % | **100 %** | 38 | 43 | 247 | **0** |
+| E5 txn-interrupt | 92.93 % | 97.95 % | 68.63 % | 91.19 % | 39 | 46 | 229 | **0** |
+| E6 high-load | 100 % | 100 % | 100 % | 100 % | 608 | 680 | 507 | **0** |
+| E7 gateway-failure | 65.81 % | **100 %** | 66.12 % | **100 %** | 46 | 45 | 205 | **0** |
+| E8 error-spike | 69.36 % | 90.38 % | 61.84 % | 58.78 % | 43 | 40 | 248 | **0** |
+| E9 unauthorized | 100 % | 100 % | 100 % | 100 % | 51 | 47 | 375 | **0** |
+| E10 abuse | 100 % | 100 % | 100 % | 100 % | 62 | 48 | 377 | **0** |
+| E11 data-loss | 100 % | 100 % | 100 % | 100 % | 53 | 47 | 504 | 1 ‡ |
+| E12 soak | 91.07 % | **99.76 %** | 85.11 % | **98.96 %** | 46 | 47 | 2 085 | **0** |
+| E13 standby-failure | 100 % | 100 % | 100 % | 100 % | 40 | 46 | 368 | **0** |
 
+Baseline: n = 1 per scenario; final: n = 3 (mean).
 † flattered by the closed-loop workload: the baseline's clients hang instead of failing (§10.4).
 ‡ one client received two 201 answers for one payment whose record was destroyed between them;
 the database holds one row for the key after the restore (0 duplicates in the database).
 
 | Measure | baseline | final |
 |---|---|---|
-| E2: payments succeed again after the fault | 20.5 s (after the operator's repair; n = 1 measurable) | **6.8 s ± 0.6 s**, primary still down |
-| E2: successful requests per second during the fault | 1.4 – 1.8 | **125 – 133** |
-| E3: throughput during the fault, share of pre-fault | 7 % (10 of 145 req/s) | **91 %** (137 of 152 req/s) |
+| E2: payments succeed again after the fault | 20.6 s (after the operator's repair) | **6.8 s ± 0.6 s**, primary still down |
+| E2: successful requests per second during the fault | 2.3 | **125 – 133** |
+| E3: throughput during the fault, share of pre-fault | 7 % (10 of 150 req/s) | **91 %** (137 of 152 req/s) |
 | E9: attacks denied, of 63 per run | 0; 41 attacker payments reached the database | **63 of 63**, 0 in the database |
-| E11: payments acknowledged before the loss and missing after the repair | all (1 115 acknowledged) | 286, 383, 118 of about 1 140 (**77 % recovered**) |
-| E11: loss window | 39.9 s (everything since the start) | **10.4 s, 13.7 s, 3.8 s** (objective ≤ 20 s) |
+| E11: payments acknowledged before the loss and missing after the repair | all (1 139 acknowledged) | 286, 383, 118 of about 1 140 (**77 % recovered**) |
+| E11: loss window | 39.8 s (everything since the start) | **10.4 s, 13.7 s, 3.8 s** (objective ≤ 20 s) |
 | E11: restore duration | no backup exists | **2.0 – 2.5 s** |
-| E12: seconds with < 99 % success, of 600 | 240 | **14 – 16** |
-| E12: lost / duplicate payments across nine faults | 0 / 2 076 | **0 / 0** |
+| E12: seconds with < 99 % success, of 600 | 155 | **14 – 16** |
+| E12: lost / duplicate payments across nine faults | 0 / 2 085 | **0 / 0** |
 | Acknowledged payments lost in a failover (9 failovers) | – | **0** |
 
 Recovery actions counted in the final runs (means per run): E1: 7 failed attempts, all 7 retried
@@ -893,7 +897,7 @@ promotions per run and the old primary rejoined as a standby twice per run witho
 ### 10.3 Per scenario: observed against the hypothesis
 
 - **E1, E4, E7 (instance failures).** Hypothesis confirmed. Final masked all three completely: no
-  failed request in nine runs. The baseline lost 8 %, 17 % and 38 % of its requests.
+  failed request in nine runs. The baseline lost 8 %, 8 % and 34 % of its requests.
 - **E2 (database primary).** Confirmed. Reads stayed at 100 %. Payments were unavailable for
   5.6 s ± 0.6 s and resumed 6.8 s after the fault, inside the 10 s objective; no acknowledged
   payment was lost and the ledger balanced; the old primary rejoined as a standby in every run.
@@ -906,15 +910,16 @@ promotions per run and the old primary rejoined as a standby twice per run witho
 - **E6 (load).** Confirmed, and no difference: both configurations served 110 clients with no
   error and a p95 of about 680 ms. The mechanisms cost nothing measurable here; they also buy
   nothing, and the baseline passes.
-- **E8 (alerting).** `HighErrorRate` fired after 12.0 s in all three final runs and resolved in
-  time.
+- **E8 (alerting).** `HighErrorRate` fired after 12.0 s in all three final runs (10.0 s in the
+  baseline) and resolved in time. Both configurations pass, as they should: monitoring is the
+  same in both.
 - **E9, E10 (security).** Confirmed. Final denied 63 of 63 attacks in each run, wrote an audit
   line for each and stored no attacker payment; the legitimate workload stayed at 100 %. In the
   baseline every attack succeeded and 41 attacker payments reached the database.
 - **E11 (data loss).** Confirmed. `PaymentRecordsLost` fired 5 to 6 s after the damage. The
   restore took about 2 s and brought back 77 % of the destroyed payments; what was missing had
   been acknowledged after the last backup. The system kept serving throughout (100 %).
-- **E12 (soak).** Confirmed: 99.76 % against 85.30 %; only the database failovers were visible.
+- **E12 (soak).** Confirmed: 99.76 % against 91.07 %; only the database failovers were visible.
 - **E13 (standby).** **Hypothesis refuted, in the system's favour.** The plan expected payments to
   stall for 2 to 4 s and the 99.5 % criterion to be at risk. Measured: no failed request in three
   runs. The controller switched synchronous replication off once per run, and the slowest
@@ -923,17 +928,16 @@ promotions per run and the old primary rejoined as a standby twice per run witho
 
 ### 10.4 Anomalies, confounding factors and weak evidence
 
-1. **`BackupStale` fired in every baseline run.** The rule is meant to be silent where backups are
-   off. In the baseline it fired throughout, so every baseline run's alert set is "incorrect" and
-   the harness waited its full two minutes for alerts to clear before each run. This is a defect
-   in the monitoring configuration, found by the campaign and not fixed before the deadline. It
-   does not touch any request, latency or integrity figure, but **baseline alert correctness
-   cannot be compared with final**, and the baseline's failed alert criteria in E8 and E13 are
-   this artefact.
-2. **The baseline looks better than final in E2 (99.29 % against 98.81 %).** With the database
+1. **A monitoring defect cost the first baseline campaign.** `BackupStale` is meant to be silent
+   where backups are off. In the first baseline campaign it fired throughout: the controller
+   exported "last backup at time 0" where no backup had ever been taken. All 17 runs of that
+   campaign were discarded, the defect was fixed, and the baseline was run again. The defect had
+   not shown in final, where a real backup exists within 15 s of start. It was found only because
+   the baseline is monitored with the same rules as the improved system.
+2. **The baseline looks better than final in E2 (99.42 % against 98.81 %).** With the database
    down the baseline's requests hang for the client's 10 s timeout; ten closed-loop workers then
-   send almost nothing, so few requests fail. Per second of the fault the baseline completed 1.4
-   to 1.8 requests and final 125 to 133. Request-based availability alone would have reported the
+   send almost nothing, so few requests fail. Per second of the fault the baseline completed 2.3
+   requests and final 125 to 133. Request-based availability alone would have reported the
    opposite of what happened.
 3. **Baseline integrity is checked by count, not by key**, because the baseline does not store the
    client's key. Its "0 lost" is weaker evidence than the final configuration's key-by-key check.
@@ -944,11 +948,10 @@ promotions per run and the old primary rejoined as a standby twice per run witho
    in exactly this way.
 5. **One run was contaminated by the experimenter** and discarded
    ([`EXPERIMENT-LOG.md`](EXPERIMENT-LOG.md)).
-6. **Three of 22 integration tests fail** against the final stack (`integration-final.txt`),
-   among them the new failover test, which received a 503 on a payment it expected to succeed.
-   The suite ran directly after the demonstration, which itself stops the database; the failures
-   were not diagnosed before the deadline. The campaign's 39 runs, not this suite, are the
-   evidence for the failover.
+6. **Three of 22 integration tests failed on their first run** and all three were faults of the
+   tests: two assumed the node named `postgres-primary` is the primary, which is false after a
+   failover; one re-sent payments while the payment breaker was still open. After correction 22
+   of 22 pass, twice, with the database roles in both orders (`integration-final.txt`).
 7. **Failover time is longer than its mechanism.** Promotion happens about 4 s after the fault;
    payments resume after 6.8 s. The difference is the payment pool's circuit breaker, which opened
    during the outage and stays open for 5 s. Two mechanisms that are each correct add up.
@@ -964,7 +967,7 @@ promotions per run and the old primary rejoined as a standby twice per run witho
 | SLO-5 destroyed data | window ≤ 20 s, restore ≤ 60 s | 3.8 – 13.7 s; 2.0 – 2.5 s | yes |
 | SLO-6 detection | ≤ 10 / 15 / 20 s | DatabaseDown 6 – 8 s, InstanceDown 5 – 7 s, HighErrorRate 12 s, PaymentRecordsLost 5 – 6 s | yes |
 | SLO-7 access control | 100 % denied and audited | 189 of 189 | yes |
-| SLO-8 redundancy restored | standby streaming at the end | 12 of 12 runs with a database fault | yes |
+| SLO-8 redundancy restored | standby streaming at the end | 9 of 9 runs with a database fault | yes |
 
 SLO-1 is not met where a fault removes every instance that can serve a payment at once: the only
 primary (E2) or both payment replicas (E5). In those cases the system offers a bounded outage of 6
@@ -976,7 +979,9 @@ In final, every must-fire alert fired in every run and no unexpected alert fired
 correct). Detection, from the injection to the alert firing: `DatabaseDown` 6.0 – 8.0 s,
 `InstanceDown` 5.0 – 7.0 s, `HighErrorRate` 12.0 s, `AuthFailureSpike` 8.0 – 10.0 s,
 `PaymentRecordsLost` 5.0 – 6.0 s. `DatabaseNoWriter` never fired in final: the promotion beat its
-4 s `for`, which is the intended outcome. For the baseline see §10.4, item 1.
+4 s `for`, which is the intended outcome. In the baseline the alert set was as expected in 8 of 13
+runs; in the other five an alert outside the scenario's list fired (for example `HighErrorRate`
+during E1, a true symptom there) or `AuthFailureSpike` did not fire because nothing is denied.
 
 ### 10.7 Trade-offs and costs
 
@@ -987,7 +992,7 @@ correct). Detection, from the injection to the alert firing: `DatabaseDown` 6.0 
 | Synchronous replication | slowest request 1.3 – 1.8 s when the standby died (E13); no error |
 | Latency at peak | none measurable: p95 680 ms against 677 ms at 110 clients |
 | Recovery point for destroyed data | up to one backup interval: 4 to 14 s of payments lost here |
-| False-positive alerts | none in final; one always-firing rule in the baseline |
+| False-positive alerts | none in final (39 of 39 runs correct) |
 
 ### 10.8 Figures
 
@@ -995,7 +1000,17 @@ Dashboard snapshots of campaign runs are in [`figures/`](figures/): `db-failure_
 shows one failover end to end (the 5xx share peaking at 7.7 %, the writer moving from one node to
 the other, the alerts in order); `soak__final__r1-full.png`, `data-loss__final__r1-full.png` and
 `gateway-failure__final__r1-full.png` show the other new behaviours. A terminal transcript of the
-live demonstration, with the per-second failover timeline, is `demo/demo-final.txt`.
+live demonstration, with the per-second failover timeline, is `demo/demo-final.txt`; the same
+demonstration against the baseline is `demo/demo-baseline.txt`.
+
+### 10.9 The endterm configuration, for reference
+
+The configuration of the previous phase was not re-run. Its campaign (`reports/endterm/RESULTS.md`,
+3 repetitions) measured the same E2 fault: payments were unavailable until the operator's repair
+and resumed 5.6 s after it (5.2 to 10.1 s), about 30 s after the fault, with a request
+availability of 96.70 %. Final resumes 6.8 s after the fault with no repair. The comparison is
+not controlled: the endterm campaign ran on earlier code and counted requests cut off at the end
+of the window as failures. E11 and E12 did not exist in the endterm.
 
 ---
 
@@ -1005,7 +1020,7 @@ live demonstration, with the per-second failover timeline, is `demo/demo-final.t
 
 The measured gains sit exactly where a mechanism acts. Replica and gateway failures are masked
 completely; a slow replica costs 9 % of throughput instead of 93 %; a client re-send is no longer
-a second charge (the baseline charged 7 003 re-sends twice across its 17 runs); attacks turn from
+a second charge (the baseline charged 5 900 re-sends twice across its 13 runs); attacks turn from
 silent successes into denied, audited and alerted events. The two additions of the final project
 do what they were built for: the database primary stopped being a single point of failure for
 payments, at the price of a 6 to 7 s outage instead of an indefinite one, and destroyed records
@@ -1019,20 +1034,18 @@ the database is back.
 
 ### 11.2 Limitations
 
-- **Baseline evidence is thin:** one or two repetitions, and its alert results are unusable.
+- **Baseline evidence is thin:** one repetition per scenario.
 - **One host.** A host failure is common-mode and untested; latency figures are specific to it.
 - **Three repetitions** show spread, not significance.
 - **Closed-loop workload** understates the effect of hanging (§10.4, item 2).
 - **Clean database stops only;** no power loss, no partition, no slow-but-alive primary.
 - **One controller with one vantage point,** advisory fencing, backups on the same host and
   unencrypted (THREAT-MODEL.md R17 – R19).
-- **Three integration tests fail,** undiagnosed.
 - **nginx and the host remain single points of failure.**
 
 ### 11.3 Future work
 
-In priority order: fix the `BackupStale` rule and complete the baseline campaign; diagnose the
-failing integration tests; reset the payment breaker on a writer change, to bring the failover
+In priority order: complete the baseline campaign to three repetitions; reset the payment breaker on a writer change, to bring the failover
 close to 4 s; an open-loop load generator; WAL archiving for point-in-time recovery and off-host,
 encrypted backups; a quorum-based failover manager; a second nginx behind a virtual IP; a second
 host.
@@ -1042,13 +1055,13 @@ host.
 ## 12. Conclusion
 
 The final configuration met seven of its eight service-level objectives and passed all 13
-scenarios in every repetition; the baseline, on the evidence collected, passed one. The objective
+scenarios in every repetition; the baseline, on one repetition, passed two. The objective
 it missed, 99.5 % availability under any single fault, is missed in the two scenarios where one
 fault removes all capacity for payments; there the system delivers a bounded outage of 6 to 7 s
 and loses no data. Across nine automatic failovers no acknowledged payment was lost, and after a
 destructive statement three quarters of the records were back within seconds. The weak points —
-thin baseline evidence, an alert rule that misfires in the baseline, three failing integration
-tests, two remaining single points of failure — are reported with the data that shows them.
+one baseline repetition, an outage that is bounded and not masked when a fault removes all
+capacity, two remaining single points of failure — are reported with the data that shows them.
 
 ---
 

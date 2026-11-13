@@ -48,8 +48,7 @@ request IDs, the generated database passwords and least-privilege roles. The bas
 hardware redundancy as the final configuration and simply does not use it, so every measured
 difference is caused by the mechanisms.
 
-The intermediate modes of the earlier phases (`midterm`, `endterm`) still deploy. A run of `endterm`
-for E2, E11 and E12 was planned and was not carried out for lack of time (REPORT.md §10).
+The intermediate modes of the earlier phases (`midterm`, `endterm`) still deploy. The endterm configuration was not re-run; REPORT.md §10.9 cites its earlier campaign.
 
 ## 3. Environment and workload
 
@@ -63,7 +62,8 @@ for E2, E11 and E12 was planned and was not carried out for lack of time (REPORT
   streaming, no alert firing.
 - Duration: 70 s per run (fault at 20 s, operator repair at 45 s); `data-loss` 90 s (loss at 40 s,
   restore at 55 s); `soak` 600 s (nine faults).
-- Repetitions: 3 per scenario and mode, in repetition-major order (all scenarios once, then again).
+- Repetitions: 3 per scenario in final, in repetition-major order (all scenarios once, then again);
+  planned as 3 for the baseline too, carried out as 1 (REPORT.md §10).
   Each mode starts from fresh volumes (`docker compose down -v`).
 - Requests still in flight when the window closes are cut off by the harness and are excluded from
   the metrics (they are kept in the raw log, flagged `abandoned`).
