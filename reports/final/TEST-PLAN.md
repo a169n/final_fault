@@ -48,9 +48,8 @@ request IDs, the generated database passwords and least-privilege roles. The bas
 hardware redundancy as the final configuration and simply does not use it, so every measured
 difference is caused by the mechanisms.
 
-The intermediate modes of the earlier phases (`midterm`, `endterm`) still deploy; `endterm` is run
-for the three scenarios where the final mode differs from it (E2, E11, E12), to show what the
-final increment alone adds.
+The intermediate modes of the earlier phases (`midterm`, `endterm`) still deploy. A run of `endterm`
+for E2, E11 and E12 was planned and was not carried out for lack of time (REPORT.md §10).
 
 ## 3. Environment and workload
 

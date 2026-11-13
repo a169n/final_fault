@@ -18,7 +18,8 @@ faults, load and attacks are injected into both, and the measured difference is 
 | Threat model | [`reports/final/THREAT-MODEL.md`](reports/final/THREAT-MODEL.md) |
 | Alert rules | [`reports/final/ALERTS.md`](reports/final/ALERTS.md) |
 | Demonstration script | [`reports/final/DEMO.md`](reports/final/DEMO.md) |
-| Presentation | [`reports/final/PRESENTATION.md`](reports/final/PRESENTATION.md) |
+| Compact report (PDF) | [`reports/final/REPORT-compact.pdf`](reports/final/REPORT-compact.pdf) |
+| Presentation outline | [`reports/final/PRESENTATION.md`](reports/final/PRESENTATION.md) |
 | Experiment log (incidents during the campaign) | [`reports/final/EXPERIMENT-LOG.md`](reports/final/EXPERIMENT-LOG.md) |
 
 The reports of the earlier phases are kept for reference: midterm in `reports/REPORT.md`, endterm
@@ -84,7 +85,7 @@ curl -s localhost:8080/api/payments -H "authorization: Bearer $TOKEN" -H 'conten
 # one experiment, end to end: known-state restore -> workload -> inject -> repair -> checks
 npm run exp db-failure -- --rep 1
 
-# the campaign: 12 scenarios x 3 repetitions per configuration, each from fresh volumes
+# the campaign: 13 scenarios x 3 repetitions per configuration, each from fresh volumes
 npm run up:baseline && npm run campaign -- --reps 3
 docker compose down -v
 npm run up:final    && npm run campaign -- --reps 3     # add --resume to continue an interrupted campaign
@@ -102,7 +103,7 @@ Each run writes `reports/final/runs/<scenario>__<mode>__r<N>/metrics.json` and t
 (`workload.jsonl.gz`, `events.jsonl.gz`, `alerts.json`, `resources.jsonl.gz`) to
 `logs/final/<scenario>__<mode>__r<N>/`. Every number in the report is computed from these files.
 
-### The twelve scenarios
+### The thirteen scenarios
 
 | # | Scenario | Fault | Assignment matrix row |
 |---|---|---|---|
@@ -118,6 +119,7 @@ Each run writes `reports/final/runs/<scenario>__<mode>__r<N>/metrics.json` and t
 | E10 | `abuse` | malformed input, burst, brute force | 7 |
 | E11 | `data-loss` | payment records destroyed, restored from backup | 8 |
 | E12 | `soak` | nine faults in ten minutes (MTTF/MTTR/availability) | 8 |
+| E13 | `standby-failure` | the database standby is stopped | 2 |
 
 ## Tests
 
@@ -174,4 +176,4 @@ experiments, the attacks and the demonstration run only against this local stack
 
 ## Team
 
-Aibyn Talgatov (CSE-2505M) and Gani Uapov (CSE-2502M). Contributions: REPORT.md, appendix A.6.
+Aibyn Talgatov (CSE-2505M). Contribution: REPORT.md, appendix A.6.
