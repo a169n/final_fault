@@ -1,0 +1,19 @@
+# Checks after the dependency upgrade (REPORT.md §5.4). Generated on 2026-11-09; raw command output follows.
+## installed versions (host python used for unit tests)
+fastapi 0.162.2 starlette 1.10.0 PyJWT 2.15.1 pydantic 2.13.5
+## python3 -m pytest -q tests/unit
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+376 passed, 1 warning in 7.37s
+## npm run test:harness
+# tests 90
+# pass 90
+# fail 0
+## npm run test:alerts
+  SUCCESS
+
+## docker compose down -v; npm run up:endterm; versions inside gateway-1
+fastapi 0.162.2 starlette 1.10.0 PyJWT 2.15.1 pydantic 2.14.3
+## STACK_REQUIRED=1 python3 -m pytest -m integration -q -rs tests/integration
+...........                                                              [100%]
+11 passed in 15.81s

@@ -1,0 +1,248 @@
+{
+  "scenario": "high-load",
+  "title": "High load",
+  "kind": "fault",
+  "mode": "midterm",
+  "rep": 1,
+  "runId": "high-load-midterm-r1-1794252150787",
+  "t0": 1794252150790,
+  "t1": 1794252221300,
+  "injectTs": 1794252170790,
+  "repairTs": 1794252195790,
+  "restore": {
+    "ok": true,
+    "durationMs": 1730,
+    "healthy": true,
+    "replicationStreaming": true,
+    "chaosReset": {
+      "3011": true,
+      "3012": true,
+      "3021": true,
+      "3022": true,
+      "3031": true,
+      "3041": true,
+      "3042": true
+    },
+    "dbReset": true,
+    "alertsClear": true,
+    "firingAtStart": []
+  },
+  "expectedAlerts": {
+    "mustFire": [],
+    "mayFire": [
+      "HighLatencyP95"
+    ]
+  },
+  "alertCorrectness": {
+    "correct": true,
+    "missing": [],
+    "unexpected": []
+  },
+  "metrics": {
+    "observationMs": 70510,
+    "requests": {
+      "total": 19005,
+      "successful": 18910,
+      "failed": 95,
+      "degraded": 0,
+      "clientTimeouts": 0,
+      "rateLimited": 0,
+      "errorRate": 0.004998684556695606
+    },
+    "throughput": {
+      "preFaultRps": 164.3,
+      "duringFaultRps": 311.04,
+      "postRepairRps": 307.6440611524892
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 0.9950013154433044,
+      "readRequestBased": 0.994641384995878,
+      "upBins": 70,
+      "downBins": 0,
+      "idleBins": 1
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": 49774,
+      "recoveryMs": null,
+      "absorptionMs": null,
+      "faultMasked": false,
+      "detectionSource": "client-visible failure",
+      "avgMs": 251.60158646218932,
+      "p50Ms": 276,
+      "p95Ms": 412,
+      "p99Ms": 493,
+      "maxMs": 1077
+    },
+    "mechanisms": {
+      "failedCallAttempts": 0,
+      "retriesThatSucceeded": 0,
+      "breakerOpened": 0,
+      "degradedResponses": 0,
+      "replicaReads": 0,
+      "duplicatesSuppressed": 739,
+      "checkpointsRolledBack": 0,
+      "healthTransitions": []
+    },
+    "alerts": [],
+    "resources": [
+      {
+        "name": "fault-tolerance-auth-1-1",
+        "maxCpuPct": 11.43,
+        "maxMemMiB": 67.05,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-gateway-1-1",
+        "maxCpuPct": 105.64,
+        "maxMemMiB": 71.73,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-gateway-2-1",
+        "maxCpuPct": 12.43,
+        "maxMemMiB": 53.62,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-grafana-1",
+        "maxCpuPct": 0.62,
+        "maxMemMiB": 44.17,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-nginx-1",
+        "maxCpuPct": 6.47,
+        "maxMemMiB": 12.3,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-payment-1-1",
+        "maxCpuPct": 21.78,
+        "maxMemMiB": 51.4,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-payment-2-1",
+        "maxCpuPct": 21.81,
+        "maxMemMiB": 45.64,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-exporter-1",
+        "maxCpuPct": 2.13,
+        "maxMemMiB": 11.23,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-primary-1",
+        "maxCpuPct": 19.88,
+        "maxMemMiB": 121.8,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-replica-1",
+        "maxCpuPct": 3.01,
+        "maxMemMiB": 39.05,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-prometheus-1",
+        "maxCpuPct": 2.05,
+        "maxMemMiB": 40.66,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-student-1-1",
+        "maxCpuPct": 25.43,
+        "maxMemMiB": 43.68,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-student-2-1",
+        "maxCpuPct": 25.54,
+        "maxMemMiB": 46.45,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-timetable-1-1",
+        "maxCpuPct": 12.06,
+        "maxMemMiB": 53.32,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-timetable-2-1",
+        "maxCpuPct": 11.08,
+        "maxMemMiB": 50.69,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-transcript-1-1",
+        "maxCpuPct": 19.72,
+        "maxMemMiB": 56.85,
+        "samples": 35
+      }
+    ]
+  },
+  "consistency": {
+    "paymentRequestsSent": 4449,
+    "paymentRequestsAccepted": 4432,
+    "paymentRequestsRateLimited": 0,
+    "distinctPaymentIntents": 3710,
+    "acknowledgedIntents": 3697,
+    "deduplicatedResponses": 735,
+    "ackedNotCompleted": 0,
+    "ackedNotCompletedByState": {},
+    "ackedNotCompletedIntents": 0,
+    "duplicateCharges": 0,
+    "duplicateChargesClient": 0,
+    "duplicateChargesDb": 0,
+    "unacknowledgedIntents": 13,
+    "integrityBasis": "idempotency-key",
+    "lostRecords": 0,
+    "lostIntents": [],
+    "phantomRecords": 13,
+    "dbRows": 3710,
+    "ledgerMeasured": true,
+    "completedInDb": 3710,
+    "dbVsIntents": 0,
+    "orphanedPending": 0,
+    "rolledBack": 0,
+    "failedPay": 0,
+    "totalCharged": 371000,
+    "ledgerBalanced": true
+  },
+  "verify": null,
+  "acceptance": [
+    {
+      "id": "error-rate-le-1pct",
+      "describe": "error rate <= 1 %",
+      "pass": true
+    },
+    {
+      "id": "p95-le-1000ms",
+      "describe": "p95 latency <= 1000 ms",
+      "pass": true
+    },
+    {
+      "id": "rate-limited-eq-0",
+      "describe": "no legitimate request is rate limited (429)",
+      "pass": true
+    },
+    {
+      "id": "resources-recorded",
+      "describe": "CPU and memory were sampled during the run",
+      "pass": true
+    }
+  ]
+}

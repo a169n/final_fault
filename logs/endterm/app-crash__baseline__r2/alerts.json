@@ -1,0 +1,19 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 71,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "HighErrorRate",
+      "firstPendingTs": 1794250256848,
+      "firstFiringTs": 1794250263239,
+      "resolvedTs": 1794250289244
+    },
+    {
+      "name": "InstanceDown",
+      "firstPendingTs": 1794250252848,
+      "firstFiringTs": 1794250257239,
+      "resolvedTs": 1794250281241
+    }
+  ]
+}

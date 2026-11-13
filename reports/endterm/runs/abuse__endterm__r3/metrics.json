@@ -1,0 +1,357 @@
+{
+  "scenario": "abuse",
+  "title": "Abuse (malformed input, request burst, login brute force)",
+  "kind": "security",
+  "mode": "endterm",
+  "rep": 3,
+  "runId": "abuse-endterm-r3-1794256240195",
+  "t0": 1794256240199,
+  "t1": 1794256310711,
+  "injectTs": 1794256260199,
+  "repairTs": 1794256285200,
+  "restore": {
+    "ok": true,
+    "durationMs": 1701,
+    "healthy": true,
+    "replicationStreaming": true,
+    "chaosReset": {
+      "3011": true,
+      "3012": true,
+      "3021": true,
+      "3022": true,
+      "3031": true,
+      "3041": true,
+      "3042": true
+    },
+    "dbReset": true,
+    "alertsClear": true,
+    "firingAtStart": []
+  },
+  "expectedAlerts": {
+    "mustFire": [
+      "AuthFailureSpike"
+    ],
+    "mayFire": [
+      "InstanceDown"
+    ]
+  },
+  "alertCorrectness": {
+    "correct": true,
+    "missing": [],
+    "unexpected": []
+  },
+  "metrics": {
+    "observationMs": 70512,
+    "requests": {
+      "total": 11871,
+      "successful": 11871,
+      "failed": 0,
+      "degraded": 0,
+      "clientTimeouts": 0,
+      "rateLimited": 0,
+      "errorRate": 0
+    },
+    "throughput": {
+      "preFaultRps": 171.05,
+      "duringFaultRps": 166.83332666693332,
+      "postRepairRps": 167.73156677511662
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 1,
+      "readRequestBased": 1,
+      "upBins": 70,
+      "downBins": 0,
+      "idleBins": 1
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": null,
+      "recoveryMs": null,
+      "absorptionMs": null,
+      "faultMasked": false,
+      "detectionSource": "none",
+      "avgMs": 10.719484457922668,
+      "p50Ms": 8,
+      "p95Ms": 27,
+      "p99Ms": 57,
+      "maxMs": 216
+    },
+    "mechanisms": {
+      "failedCallAttempts": 0,
+      "retriesThatSucceeded": 0,
+      "breakerOpened": 0,
+      "degradedResponses": 0,
+      "replicaReads": 0,
+      "duplicatesSuppressed": 482,
+      "checkpointsRolledBack": 0,
+      "healthTransitions": []
+    },
+    "alerts": [
+      {
+        "name": "AuthFailureSpike",
+        "fired": true,
+        "detectionMs": 9007,
+        "resolvedAfterRepairMs": 10016,
+        "firstPendingTs": 1794256264848,
+        "firstFiringTs": 1794256269206,
+        "resolvedTs": 1794256295216
+      }
+    ],
+    "resources": [
+      {
+        "name": "fault-tolerance-auth-1-1",
+        "maxCpuPct": 46.31,
+        "maxMemMiB": 69.71,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-gateway-1-1",
+        "maxCpuPct": 51.95,
+        "maxMemMiB": 54.48,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-gateway-2-1",
+        "maxCpuPct": 48.93,
+        "maxMemMiB": 77.07,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-grafana-1",
+        "maxCpuPct": 0.18,
+        "maxMemMiB": 45.69,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-nginx-1",
+        "maxCpuPct": 9.7,
+        "maxMemMiB": 10.9,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-payment-1-1",
+        "maxCpuPct": 17.31,
+        "maxMemMiB": 51.04,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-payment-2-1",
+        "maxCpuPct": 17.42,
+        "maxMemMiB": 52.61,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-exporter-1",
+        "maxCpuPct": 2,
+        "maxMemMiB": 11.11,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-primary-1",
+        "maxCpuPct": 17.3,
+        "maxMemMiB": 134.5,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-replica-1",
+        "maxCpuPct": 2.01,
+        "maxMemMiB": 73.89,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-prometheus-1",
+        "maxCpuPct": 2.2,
+        "maxMemMiB": 49.08,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-student-1-1",
+        "maxCpuPct": 21.5,
+        "maxMemMiB": 50.23,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-student-2-1",
+        "maxCpuPct": 19.02,
+        "maxMemMiB": 51.87,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-timetable-1-1",
+        "maxCpuPct": 10.51,
+        "maxMemMiB": 53.73,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-timetable-2-1",
+        "maxCpuPct": 12.93,
+        "maxMemMiB": 49.29,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-transcript-1-1",
+        "maxCpuPct": 18.86,
+        "maxMemMiB": 58.11,
+        "samples": 35
+      }
+    ]
+  },
+  "consistency": {
+    "paymentRequestsSent": 2840,
+    "paymentRequestsAccepted": 2840,
+    "paymentRequestsRateLimited": 0,
+    "distinctPaymentIntents": 2358,
+    "acknowledgedIntents": 2358,
+    "deduplicatedResponses": 482,
+    "ackedNotCompleted": 0,
+    "ackedNotCompletedByState": {},
+    "ackedNotCompletedIntents": 0,
+    "duplicateCharges": 0,
+    "duplicateChargesClient": 0,
+    "duplicateChargesDb": 0,
+    "unacknowledgedIntents": 0,
+    "integrityBasis": "idempotency-key",
+    "lostRecords": 0,
+    "lostIntents": [],
+    "phantomRecords": 0,
+    "dbRows": 2358,
+    "ledgerMeasured": true,
+    "completedInDb": 2358,
+    "dbVsIntents": 0,
+    "orphanedPending": 0,
+    "rolledBack": 0,
+    "failedPay": 0,
+    "totalCharged": 235800,
+    "ledgerBalanced": true
+  },
+  "verify": {
+    "malformed": {
+      "sent": 203,
+      "serverErrors": 0,
+      "statusCounts": {
+        "400": 2,
+        "413": 1,
+        "422": 200
+      }
+    },
+    "burst": {
+      "sent": 1000,
+      "ok": 64,
+      "limited": 936,
+      "limitedWithRetryAfter": 936,
+      "other": 0,
+      "firstLimitedAt": 31,
+      "elapsedMs": 1276
+    },
+    "bruteForce": {
+      "statuses": [
+        401,
+        401,
+        401,
+        401,
+        401,
+        401,
+        401,
+        401,
+        401,
+        429,
+        401,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429,
+        429
+      ],
+      "elapsedMs": 693
+    },
+    "instances": {
+      "allUpAfter": true,
+      "restarted": [],
+      "containersChecked": 16
+    },
+    "logins": {
+      "staff": {
+        "ok": true
+      },
+      "s7": {
+        "ok": true
+      }
+    }
+  },
+  "acceptance": [
+    {
+      "id": "malformed-input-no-5xx",
+      "describe": "no malformed request caused a 5xx, and every one reached input validation (none refused with 401/403/429 first)",
+      "pass": true
+    },
+    {
+      "id": "burst-429-after-quota",
+      "describe": "the request burst got 429 after the quota, with Retry-After, and no 5xx",
+      "pass": true
+    },
+    {
+      "id": "bruteforce-429-after-5",
+      "describe": "the login brute force got 429 after the 5-attempt burst",
+      "pass": true
+    },
+    {
+      "id": "instances-stay-up",
+      "describe": "no instance went down or was restarted during the abuse (container RestartCount/StartedAt unchanged, every instance healthy after)",
+      "pass": true
+    },
+    {
+      "id": "ledger-balanced",
+      "describe": "sum of completed payments equals the sum of student balances",
+      "pass": true
+    },
+    {
+      "id": "availability-ge-99.9pct",
+      "describe": "request-based availability >= 99.9 %",
+      "pass": true
+    }
+  ]
+}

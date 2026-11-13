@@ -1,0 +1,308 @@
+{
+  "scenario": "unauthorized-access",
+  "title": "Unauthorized access (forged, expired and alg:none tokens; privilege escalation)",
+  "kind": "security",
+  "mode": "endterm",
+  "rep": 0,
+  "runId": "unauthorized-access-endterm-r0-1794261758596",
+  "t0": 1794261758600,
+  "t1": 1794261829110,
+  "injectTs": 1794261778600,
+  "repairTs": 1794261803600,
+  "restore": {
+    "ok": true,
+    "durationMs": 1670,
+    "healthy": true,
+    "replicationStreaming": true,
+    "chaosReset": {
+      "3011": true,
+      "3012": true,
+      "3021": true,
+      "3022": true,
+      "3031": true,
+      "3041": true,
+      "3042": true
+    },
+    "dbReset": true,
+    "alertsClear": true,
+    "firingAtStart": []
+  },
+  "expectedAlerts": {
+    "mustFire": [
+      "AuthFailureSpike"
+    ],
+    "mayFire": []
+  },
+  "alertCorrectness": {
+    "correct": true,
+    "missing": [],
+    "unexpected": []
+  },
+  "metrics": {
+    "observationMs": 70510,
+    "requests": {
+      "total": 11619,
+      "successful": 11619,
+      "failed": 0,
+      "degraded": 0,
+      "clientTimeouts": 0,
+      "rateLimited": 0,
+      "errorRate": 0
+    },
+    "throughput": {
+      "preFaultRps": 166.5,
+      "duringFaultRps": 164.04,
+      "postRepairRps": 164.17091336730692
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 1,
+      "readRequestBased": 1,
+      "upBins": 70,
+      "downBins": 0,
+      "idleBins": 1
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": null,
+      "recoveryMs": null,
+      "absorptionMs": null,
+      "faultMasked": false,
+      "detectionSource": "none",
+      "avgMs": 11.66856011704966,
+      "p50Ms": 9,
+      "p95Ms": 27,
+      "p99Ms": 52,
+      "maxMs": 262
+    },
+    "mechanisms": {
+      "failedCallAttempts": 0,
+      "retriesThatSucceeded": 0,
+      "breakerOpened": 0,
+      "degradedResponses": 0,
+      "replicaReads": 0,
+      "duplicatesSuppressed": 438,
+      "checkpointsRolledBack": 0,
+      "healthTransitions": []
+    },
+    "alerts": [
+      {
+        "name": "AuthFailureSpike",
+        "fired": true,
+        "detectionMs": 9000,
+        "resolvedAfterRepairMs": 6006,
+        "firstPendingTs": 1794261782848,
+        "firstFiringTs": 1794261787600,
+        "resolvedTs": 1794261809606
+      }
+    ],
+    "resources": [
+      {
+        "name": "fault-tolerance-auth-1-1",
+        "maxCpuPct": 14.7,
+        "maxMemMiB": 69.55,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-gateway-1-1",
+        "maxCpuPct": 47.83,
+        "maxMemMiB": 60.21,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-gateway-2-1",
+        "maxCpuPct": 47.21,
+        "maxMemMiB": 61.48,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-grafana-1",
+        "maxCpuPct": 0.24,
+        "maxMemMiB": 46.33,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-nginx-1",
+        "maxCpuPct": 6.75,
+        "maxMemMiB": 10.77,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-payment-1-1",
+        "maxCpuPct": 17.88,
+        "maxMemMiB": 54.73,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-payment-2-1",
+        "maxCpuPct": 20.73,
+        "maxMemMiB": 50.23,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-postgres-exporter-1",
+        "maxCpuPct": 2.29,
+        "maxMemMiB": 9.629,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-postgres-primary-1",
+        "maxCpuPct": 15.65,
+        "maxMemMiB": 83.93,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-postgres-replica-1",
+        "maxCpuPct": 2.09,
+        "maxMemMiB": 35.48,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-prometheus-1",
+        "maxCpuPct": 2.47,
+        "maxMemMiB": 42.75,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-student-1-1",
+        "maxCpuPct": 20.98,
+        "maxMemMiB": 55.3,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-student-2-1",
+        "maxCpuPct": 20.99,
+        "maxMemMiB": 52.57,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-timetable-1-1",
+        "maxCpuPct": 14.16,
+        "maxMemMiB": 48.97,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-timetable-2-1",
+        "maxCpuPct": 13.32,
+        "maxMemMiB": 55.23,
+        "samples": 34
+      },
+      {
+        "name": "fault-tolerance-transcript-1-1",
+        "maxCpuPct": 19.49,
+        "maxMemMiB": 47.13,
+        "samples": 34
+      }
+    ]
+  },
+  "consistency": {
+    "paymentRequestsSent": 2674,
+    "paymentRequestsAccepted": 2674,
+    "paymentRequestsRateLimited": 0,
+    "distinctPaymentIntents": 2236,
+    "acknowledgedIntents": 2236,
+    "deduplicatedResponses": 438,
+    "ackedNotCompleted": 0,
+    "ackedNotCompletedByState": {},
+    "ackedNotCompletedIntents": 0,
+    "duplicateCharges": 0,
+    "duplicateChargesClient": 0,
+    "duplicateChargesDb": 0,
+    "unacknowledgedIntents": 0,
+    "integrityBasis": "idempotency-key",
+    "lostRecords": 0,
+    "lostIntents": [],
+    "phantomRecords": 0,
+    "dbRows": 2236,
+    "ledgerMeasured": true,
+    "completedInDb": 2236,
+    "dbVsIntents": 0,
+    "orphanedPending": 0,
+    "rolledBack": 0,
+    "failedPay": 0,
+    "totalCharged": 223600,
+    "ledgerBalanced": true
+  },
+  "verify": {
+    "attacks": {
+      "attempts": 63,
+      "denied": 63,
+      "statusCounts": {
+        "401": 36,
+        "403": 27
+      },
+      "byCategory": {
+        "no-token": {
+          "401": 9
+        },
+        "forged-signature": {
+          "401": 9
+        },
+        "expired-token": {
+          "401": 9
+        },
+        "alg-none": {
+          "401": 9
+        },
+        "pay-for-other-student": {
+          "403": 9
+        },
+        "create-student": {
+          "403": 9
+        },
+        "list-all-students": {
+          "403": 9
+        }
+      }
+    },
+    "attackPaymentsInDb": 0,
+    "evilStudents": 0,
+    "auditDenies": 63,
+    "logins": {
+      "s7": {
+        "ok": true
+      }
+    }
+  },
+  "acceptance": [
+    {
+      "id": "attacks-all-denied",
+      "describe": "every attack attempt was denied (401/403), none got a 2xx; the s7-token attempts were refused by the policy (403), not for a missing token",
+      "pass": true
+    },
+    {
+      "id": "attacker-payments-in-db-eq-0",
+      "describe": "no attacker payment (attack amount or attack- idempotency key) reached the database",
+      "pass": true
+    },
+    {
+      "id": "evil-students-eq-0",
+      "describe": "no student with an evil- id was created",
+      "pass": true
+    },
+    {
+      "id": "audit-denies-ge-attempts",
+      "describe": "at least one audit deny event per attack attempt",
+      "pass": true
+    },
+    {
+      "id": "ledger-balanced",
+      "describe": "sum of completed payments equals the sum of student balances",
+      "pass": true
+    },
+    {
+      "id": "availability-ge-99.9pct",
+      "describe": "request-based availability >= 99.9 %",
+      "pass": true
+    }
+  ]
+}

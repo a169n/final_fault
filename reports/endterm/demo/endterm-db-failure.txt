@@ -1,0 +1,12 @@
+$ npm run demo -- db-failure
+deployed mode: endterm   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Database failure: the PostgreSQL primary is stopped ==
+  expected in endterm: as midterm; DatabaseDown fires within about 10 s (see the alerts demo)
+  before   students: 200 x10   transcripts: 200 x5   payments: 201 x3
+  >> postgres-primary stopped
+  during   students: 200 x4  203 x1   transcripts: 203 x5   payments: 503 x3
+  >> postgres-primary started
+  after    students: 200 x5  203 x5   transcripts: 200 x5   payments: 201 x3
+  Grafana (this step): http://localhost:3000/d/university?from=1794256935994&to=1794256997239
+(exit 0)

@@ -1,0 +1,278 @@
+{
+  "scenario": "txn-interrupt",
+  "title": "Corrupted / lost transaction",
+  "kind": "fault",
+  "mode": "baseline",
+  "rep": 3,
+  "runId": "txn-interrupt-baseline-r3-1794251303055",
+  "t0": 1794251303058,
+  "t1": 1794251373568,
+  "injectTs": 1794251323059,
+  "repairTs": 1794251348058,
+  "restore": {
+    "ok": true,
+    "durationMs": 1749,
+    "healthy": true,
+    "replicationStreaming": true,
+    "chaosReset": {
+      "3011": true,
+      "3012": true,
+      "3021": true,
+      "3022": true,
+      "3031": true,
+      "3041": true,
+      "3042": true
+    },
+    "dbReset": true,
+    "alertsClear": true,
+    "firingAtStart": []
+  },
+  "expectedAlerts": {
+    "mustFire": [],
+    "mayFire": [
+      "PaymentsStuckPending",
+      "HighErrorRate",
+      "InstanceDown"
+    ]
+  },
+  "alertCorrectness": {
+    "correct": true,
+    "missing": [],
+    "unexpected": []
+  },
+  "metrics": {
+    "observationMs": 70510,
+    "requests": {
+      "total": 10211,
+      "successful": 9560,
+      "failed": 651,
+      "degraded": 0,
+      "clientTimeouts": 3,
+      "rateLimited": 0,
+      "errorRate": 0.06375477426304965
+    },
+    "throughput": {
+      "preFaultRps": 167.1916404179791,
+      "duringFaultRps": 87.16348653946159,
+      "postRepairRps": 158.2516660133281
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 0.9362452257369503,
+      "readRequestBased": 1,
+      "upBins": 68,
+      "downBins": 0,
+      "idleBins": 3
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": 5,
+      "recoveryMs": null,
+      "absorptionMs": null,
+      "faultMasked": false,
+      "detectionSource": "client-visible failure",
+      "avgMs": 10.528242677824268,
+      "p50Ms": 8,
+      "p95Ms": 25,
+      "p99Ms": 48,
+      "maxMs": 98
+    },
+    "mechanisms": {
+      "failedCallAttempts": 0,
+      "retriesThatSucceeded": 0,
+      "breakerOpened": 0,
+      "degradedResponses": 0,
+      "replicaReads": 0,
+      "duplicatesSuppressed": 0,
+      "checkpointsRolledBack": 0,
+      "healthTransitions": []
+    },
+    "alerts": [
+      {
+        "name": "HighErrorRate",
+        "fired": true,
+        "detectionMs": 12005,
+        "resolvedAfterRepairMs": 13014,
+        "firstPendingTs": 1794251328848,
+        "firstFiringTs": 1794251335064,
+        "resolvedTs": 1794251361072
+      },
+      {
+        "name": "InstanceDown",
+        "fired": true,
+        "detectionMs": 6005,
+        "resolvedAfterRepairMs": 3011,
+        "firstPendingTs": 1794251324848,
+        "firstFiringTs": 1794251329064,
+        "resolvedTs": 1794251351069
+      },
+      {
+        "name": "PaymentsStuckPending",
+        "fired": true,
+        "detectionMs": 38013,
+        "resolvedAfterRepairMs": null,
+        "firstPendingTs": 1794251350848,
+        "firstFiringTs": 1794251361072,
+        "resolvedTs": null
+      }
+    ],
+    "resources": [
+      {
+        "name": "fault-tolerance-auth-1-1",
+        "maxCpuPct": 13.55,
+        "maxMemMiB": 66.29,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-gateway-1-1",
+        "maxCpuPct": 62.05,
+        "maxMemMiB": 64.14,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-gateway-2-1",
+        "maxCpuPct": 11.9,
+        "maxMemMiB": 51.37,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-grafana-1",
+        "maxCpuPct": 1.97,
+        "maxMemMiB": 46.25,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-nginx-1",
+        "maxCpuPct": 3.27,
+        "maxMemMiB": 10.75,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-payment-1-1",
+        "maxCpuPct": 18.44,
+        "maxMemMiB": 41.36,
+        "samples": 22
+      },
+      {
+        "name": "fault-tolerance-payment-2-1",
+        "maxCpuPct": 18.94,
+        "maxMemMiB": 51.42,
+        "samples": 22
+      },
+      {
+        "name": "fault-tolerance-postgres-exporter-1",
+        "maxCpuPct": 2.11,
+        "maxMemMiB": 11.43,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-primary-1",
+        "maxCpuPct": 17.52,
+        "maxMemMiB": 86.29,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-replica-1",
+        "maxCpuPct": 2.43,
+        "maxMemMiB": 65.23,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-prometheus-1",
+        "maxCpuPct": 1.82,
+        "maxMemMiB": 48.23,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-student-1-1",
+        "maxCpuPct": 19.88,
+        "maxMemMiB": 50.37,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-student-2-1",
+        "maxCpuPct": 19.39,
+        "maxMemMiB": 53.99,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-timetable-1-1",
+        "maxCpuPct": 13.29,
+        "maxMemMiB": 43.43,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-timetable-2-1",
+        "maxCpuPct": 11.91,
+        "maxMemMiB": 46.79,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-transcript-1-1",
+        "maxCpuPct": 16.95,
+        "maxMemMiB": 50.24,
+        "samples": 35
+      }
+    ]
+  },
+  "consistency": {
+    "paymentRequestsSent": 2403,
+    "paymentRequestsAccepted": 1752,
+    "paymentRequestsRateLimited": 0,
+    "distinctPaymentIntents": 2007,
+    "acknowledgedIntents": 1463,
+    "deduplicatedResponses": 0,
+    "ackedNotCompleted": 0,
+    "ackedNotCompletedByState": {},
+    "ackedNotCompletedIntents": 0,
+    "duplicateCharges": 289,
+    "duplicateChargesClient": 289,
+    "duplicateChargesDb": 0,
+    "unacknowledgedIntents": 544,
+    "integrityBasis": "count",
+    "lostRecords": 0,
+    "lostIntents": [],
+    "phantomRecords": 5,
+    "dbRows": 1759,
+    "ledgerMeasured": true,
+    "completedInDb": 1757,
+    "dbVsIntents": -250,
+    "orphanedPending": 2,
+    "rolledBack": 0,
+    "failedPay": 0,
+    "totalCharged": 175700,
+    "ledgerBalanced": true
+  },
+  "verify": null,
+  "acceptance": [
+    {
+      "id": "duplicates-eq-0",
+      "describe": "no duplicate charge (DB and client side)",
+      "pass": false
+    },
+    {
+      "id": "lost-eq-0",
+      "describe": "no acknowledged payment missing from the DB",
+      "pass": true
+    },
+    {
+      "id": "orphaned-pending-eq-0",
+      "describe": "no payment left pending at the end",
+      "pass": false
+    },
+    {
+      "id": "ledger-balanced",
+      "describe": "sum of completed payments equals the sum of student balances",
+      "pass": true
+    }
+  ]
+}

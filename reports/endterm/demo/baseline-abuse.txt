@@ -1,0 +1,20 @@
+$ npm run demo -- abuse
+deployed mode: baseline   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Abuse: malformed input, request burst, login brute force ==
+  expected in baseline: no validation or limits: some malformed bodies are accepted (2xx) or crash a handler (5xx); the burst is all 200; brute force all 401
+  malformed input (23 requests: 20 bad payment bodies, invalid JSON, 1 MiB body, bad path):
+    201 x5  400 x9  404 x5  413 x1  422 x1  503 x2
+    201 ACCEPTED  {"studentId":"s7","amount":10000.01}
+    503 SERVER ERROR  {"studentId":"s7","amount":1000000000}
+    201 ACCEPTED  {"studentId":"s7","amount":1.001}
+    201 ACCEPTED  {"studentId":"s7","amount":true}
+    503 SERVER ERROR  {"studentId":7,"amount":100}
+    201 ACCEPTED  {"studentId":"s7","amount":100,"admin":true}
+    201 ACCEPTED  {"studentId":"s7","amount":100,"note":"xxxxxxxxxxxxxxxxxxxxxxxxxxxx...
+  burst: 600 GETs of /api/students/s7 as s7 in 2142 ms
+    2xx 600   429 0 (Retry-After on 0)   other 0
+  login brute force: 20 wrong passwords for s7: 401 x20
+  instances after the abuse: gateway-1 up, gateway-2 up, auth-1 up, student-1 up, student-2 up, payment-1 up, payment-2 up, transcript-1 up
+  Grafana (this step): http://localhost:3000/d/university?from=1794257182530&to=1794257216804
+(exit 0)

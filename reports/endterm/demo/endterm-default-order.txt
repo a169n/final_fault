@@ -1,0 +1,74 @@
+$ npm run demo
+deployed mode: endterm   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Application crash: student-1 kills its own process ==
+  expected in endterm: as midterm: 2xx throughout; student-1 restarts on its own
+  before   students: 200 x20
+  >> student-1 crashed (POST /chaos/crash)
+  during   students: 200 x40
+           gateway view: {"http://student-1:3000":false,"http://payment-1:3000":true,"http://payment-2:3000":true,"http://timetable-2:3000":true,"http://student-2:3000":true,"http://timetable-1:3000":true,"http://transcript-1:3000":true,"http://auth-1:3000":true}
+  after 8s students: 200 x20
+  Grafana (this step): http://localhost:3000/d/university?from=1794257087334&to=1794257127213
+
+== Database failure: the PostgreSQL primary is stopped ==
+  expected in endterm: as midterm; DatabaseDown fires within about 10 s (see the alerts demo)
+  before   students: 200 x10   transcripts: 200 x5   payments: 201 x3
+  >> postgres-primary stopped
+  during   students: 200 x4  203 x1   transcripts: 200 x2  203 x3   payments: 503 x3
+  >> postgres-primary started
+  after    students: 200 x10   transcripts: 200 x5   payments: 201 x3
+  Grafana (this step): http://localhost:3000/d/university?from=1794257097213&to=1794257152083
+
+== Gateway failure: gateway-1 is killed under live traffic ==
+  expected in endterm: nginx fails over to gateway-2: the per-second histogram stays 2xx
+  t+ 0s  200 x95  201 x46             avg    8 ms  p95   15 ms
+  t+ 1s  200 x96  201 x49             avg    7 ms  p95   12 ms
+  t+ 2s  200 x96  201 x46             avg    8 ms  p95   14 ms
+  t+ 3s  >> kill gateway-1 (docker compose kill)
+  t+ 3s  200 x90  201 x45             avg   10 ms  p95   25 ms
+  t+ 4s  200 x93  201 x48             avg    8 ms  p95   13 ms
+  t+ 5s  200 x91  201 x47             avg    9 ms  p95   17 ms
+  t+ 6s  200 x93  201 x45             avg    9 ms  p95   16 ms
+  t+ 7s  200 x91  201 x45             avg   10 ms  p95   25 ms
+  t+ 8s  200 x90  201 x46             avg    9 ms  p95   16 ms
+  t+ 9s  200 x93  201 x46             avg    9 ms  p95   16 ms
+  t+10s  200 x93  201 x46             avg    9 ms  p95   19 ms
+  t+11s  >> start gateway-1
+  t+11s  200 x85  201 x43             avg   11 ms  p95   21 ms
+  t+12s  200 x88  201 x43             avg   10 ms  p95   21 ms
+  t+13s  200 x90  201 x47             avg    9 ms  p95   19 ms
+  t+14s  200 x98  201 x49             avg    7 ms  p95   13 ms
+  t+15s  200 x96  201 x47             avg    7 ms  p95   13 ms
+  while gateway-1 was down: 200 x734  201 x368
+  instances now: gateway-1 up, gateway-2 up, auth-1 up, student-1 up, student-2 up, payment-1 up, payment-2 up, transcript-1 up
+  Grafana (this step): http://localhost:3000/d/university?from=1794257122083&to=1794257168126
+
+== Unauthorized access: missing, forged, expired and alg:none tokens; s7 pays for s8 ==
+  expected in endterm: no token / forged / expired / alg:none -> 401, s7 paying for s8 -> 403; one audit deny line per rid; DB unchanged
+  each attack is POST /api/payments {studentId: "s8", amount: 13.37}
+  no token                         -> 401   rid=attack-demo-1794257153178-0
+  forged signature (admin claims)  -> 401   rid=attack-demo-1794257153178-1
+  expired token (admin claims)     -> 401   rid=attack-demo-1794257153178-2
+  alg:none token (admin claims)    -> 401   rid=attack-demo-1794257153178-3
+  student s7 pays for s8           -> 403   rid=attack-demo-1794257153178-4
+  audit lines for these rids (logs/events.jsonl):
+    gateway-2  rid=attack-demo-1794257153178-0  deny 401 missing_token  POST /api/payments  sub=-
+    gateway-1  rid=attack-demo-1794257153178-1  deny 401 bad_signature  POST /api/payments  sub=-
+    gateway-2  rid=attack-demo-1794257153178-2  deny 401 expired  POST /api/payments  sub=-
+    gateway-1  rid=attack-demo-1794257153178-3  deny 401 malformed  POST /api/payments  sub=-
+    gateway-2  rid=attack-demo-1794257153178-4  deny 403 not_owner  POST /api/payments  sub=s7 (student)
+  attacker payments in the DB (amount 13.37): before 0, after 0
+  PASS: all 5 refused (401 x4  403 x1); DB unchanged
+  follow one request through every hop: grep attack-demo-1794257153178-0 logs/events.jsonl
+  Grafana (this step): http://localhost:3000/d/university?from=1794257138126&to=1794257169582
+
+== Abuse: malformed input, request burst, login brute force ==
+  expected in endterm: malformed -> 422/400/413, never 5xx; burst -> 429 with Retry-After; brute force -> 429 after 5-10 tries; every instance stays healthy
+  malformed input (23 requests: 20 bad payment bodies, invalid JSON, 1 MiB body, bad path):
+    400 x2  413 x1  422 x20
+  burst: 1000 GETs of /api/students/s7 as s7 in 797 ms
+    2xx 54   429 946 (Retry-After on 946, e.g. "1")   other 0
+  login brute force: 20 wrong passwords for s7: 401 x10  429 x10   (first 429 at attempt 11)
+  instances after the abuse: gateway-1 up, gateway-2 up, auth-1 up, student-1 up, student-2 up, payment-1 up, payment-2 up, transcript-1 up
+  Grafana (this step): http://localhost:3000/d/university?from=1794257139582&to=1794257172015
+(exit 0)

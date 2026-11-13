@@ -1,0 +1,135 @@
+# CI: unit tests, harness tests, configuration checks, dependency audit, and the integration suite
+# against a real endterm stack. Everything runs on synthetic data and on the runner's own stack only.
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt -c constraints.txt
+      - run: python -m pytest -q tests/unit
+
+  harness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run test:harness
+
+  config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # docker-compose.yml requires the generated secrets (${VAR:?}), so write a throwaway .env with
+      # experiments/env.ts first (random values, never uploaded), then render every mode.
+      - name: docker compose config (baseline, midterm, endterm)
+        run: |
+          for mode in baseline midterm endterm; do
+            npm run --silent env -- "$mode"
+            docker compose config -q
+            echo "compose config ok: $mode"
+          done
+      - name: alert rule unit tests (promtool test rules)
+        run: npm run test:alerts
+      - name: promtool check config
+        run: >-
+          docker run --rm -v "$PWD/config/prometheus:/etc/prometheus:ro" --entrypoint promtool
+          prom/prometheus:v2.53.0 check config /etc/prometheus/prometheus.yml
+      - name: nginx -t (single, redundant)
+        run: |
+          for conf in single redundant; do
+            docker run --rm -v "$PWD/config/nginx/$conf.conf:/etc/nginx/nginx.conf:ro" nginx:1.27-alpine nginx -t
+          done
+
+  # Dependency check (THREAT-MODEL.md B5.T1). A known vulnerability fails this job; findings are
+  # recorded in the report (reports/endterm/security/, REPORT.md §5.4) rather than silenced with
+  # --ignore-vuln. With the upgraded pins (PyJWT 2.15.1, FastAPI 0.162.2, Starlette 1.10.0) the same
+  # command reports no known vulnerabilities (reports/endterm/security/pip-audit-after.json).
+  deps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pip-audit==2.7.3
+      - name: pip-audit -r requirements.txt
+        run: |
+          set -o pipefail
+          pip-audit -r requirements.txt --desc off 2>&1 | tee pip-audit.txt
+      - name: findings in the job summary
+        if: always()
+        run: |
+          { echo '## pip-audit -r requirements.txt'; echo '```'; cat pip-audit.txt 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pip-audit
+          path: pip-audit.txt
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [unit, config]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install -r requirements-dev.txt -c constraints.txt
+      - name: npm run up:endterm
+        run: npm run up:endterm
+      - name: wait for the endterm stack
+        run: |
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:8080/health | grep -q '"mode":"endterm"'; then
+              echo "stack healthy after ~$((i * 2)) s"; exit 0
+            fi
+            sleep 2
+          done
+          docker compose ps; exit 1
+      - name: pytest -m integration
+        # STACK_REQUIRED: in CI a skipped suite (stack not reachable) is a failure, not a pass
+        run: python -m pytest -m integration -q -rs tests/integration
+        env:
+          STACK_REQUIRED: "1"
+      - name: stack state on failure
+        if: failure()
+        run: |
+          docker compose ps
+          docker compose logs --tail 100
+      - name: tear down
+        if: always()
+        run: docker compose down -v

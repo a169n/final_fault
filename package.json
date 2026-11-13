@@ -1,0 +1,28 @@
+{
+  "name": "ft-university",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "up:baseline": "node --experimental-strip-types experiments/up.ts baseline",
+    "up:midterm": "node --experimental-strip-types experiments/up.ts midterm",
+    "up:endterm": "node --experimental-strip-types experiments/up.ts endterm",
+    "up:final": "node --experimental-strip-types experiments/up.ts final",
+    "up:ft": "node --experimental-strip-types experiments/up.ts midterm",
+    "env": "node --experimental-strip-types experiments/env-file.ts",
+    "mode": "node -e \"fetch('http://localhost:8080/health').then(r=>r.json()).then(j=>console.log(j.mode??(j.ft?'midterm':'baseline'))).catch(()=>console.log('not running'))\"",
+    "demo": "node --experimental-strip-types experiments/demo.ts",
+    "exp": "node --experimental-strip-types experiments/run.ts",
+    "campaign": "node --experimental-strip-types experiments/campaign.ts",
+    "db:restore": "node --experimental-strip-types experiments/restore.ts",
+    "reliability": "node --experimental-strip-types experiments/reliability.ts",
+    "aggregate": "node --experimental-strip-types experiments/aggregate.ts",
+    "monitoring": "docker compose up -d prometheus grafana postgres-exporter postgres-exporter-replica db-controller",
+    "test:harness": "node --experimental-strip-types --test \"experiments/**/*.test.ts\"",
+    "test:alerts": "docker run --rm -v ./config/prometheus:/p --entrypoint promtool prom/prometheus:v2.53.0 test rules /p/alerts.test.yml",
+    "test": "python3 -m pytest -q tests/unit && npm run test:harness",
+    "test:integration": "python3 -m pytest -m integration -q tests/integration"
+  }
+}

@@ -1,0 +1,13 @@
+$ npm run demo -- abuse
+deployed mode: endterm   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Abuse: malformed input, request burst, login brute force ==
+  expected in endterm: malformed -> 422/400/413, never 5xx; burst -> 429 with Retry-After; brute force -> 429 after 5-10 tries; every instance stays healthy
+  malformed input (23 requests: 20 bad payment bodies, invalid JSON, 1 MiB body, bad path):
+    400 x2  413 x1  422 x20
+  burst: 1000 GETs of /api/students/s7 as s7 in 863 ms
+    2xx 56   429 944 (Retry-After on 944, e.g. "1")   other 0
+  login brute force: 20 wrong passwords for s7: 401 x10  429 x10   (first 429 at attempt 11)
+  instances after the abuse: gateway-1 up, gateway-2 up, auth-1 up, student-1 up, student-2 up, payment-1 up, payment-2 up, transcript-1 up
+  Grafana (this step): http://localhost:3000/d/university?from=1794257001062&to=1794257033681
+(exit 0)

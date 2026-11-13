@@ -1,0 +1,12 @@
+$ npm run demo -- app-crash
+deployed mode: endterm   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Application crash: student-1 kills its own process ==
+  expected in endterm: as midterm: 2xx throughout; student-1 restarts on its own
+  before   students: 200 x20
+  >> student-1 crashed (POST /chaos/crash)
+  during   students: 200 x40
+           gateway view: {"http://student-2:3000":true,"http://payment-2:3000":true,"http://payment-1:3000":true,"http://student-1:3000":true,"http://timetable-2:3000":true,"http://timetable-1:3000":true,"http://transcript-1:3000":true,"http://auth-1:3000":true}
+  after 8s students: 200 x20
+  Grafana (this step): http://localhost:3000/d/university?from=1794256916428&to=1794256956311
+(exit 0)

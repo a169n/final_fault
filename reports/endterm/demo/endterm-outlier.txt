@@ -1,0 +1,34 @@
+$ npm run demo -- outlier
+deployed mode: endterm   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Outlier ejection: student-1 becomes slow ==
+  expected in endterm: after 3 consecutive timeouts student-1 is ejected (instance_ejected=1 on the gateways) and latency drops back; it is re-probed after 10 s
+  t+ 0s  200 x155                     avg    6 ms  p95   12 ms   ejected: gw1=- gw2=-
+  t+ 1s  200 x150                     avg    6 ms  p95   13 ms   ejected: gw1=- gw2=-
+  t+ 2s  >> student-1 slow: +3000 ms per request (/chaos latencyMs)
+  t+ 2s  200 x14                      avg  243 ms  p95  833 ms   ejected: gw1=student-1 gw2=-
+  t+ 3s  200 x34                      avg  107 ms  p95  841 ms   ejected: gw1=student-1 gw2=student-1
+  t+ 4s  200 x150                     avg    7 ms  p95   11 ms   ejected: gw1=student-1 gw2=student-1
+  t+ 5s  200 x150                     avg    7 ms  p95   11 ms   ejected: gw1=student-1 gw2=student-1
+  t+ 6s  200 x148                     avg    7 ms  p95   13 ms   ejected: gw1=student-1 gw2=student-1
+  t+ 7s  200 x146                     avg    7 ms  p95   13 ms   ejected: gw1=student-1 gw2=student-1
+  t+ 8s  200 x139                     avg    9 ms  p95   24 ms   ejected: gw1=student-1 gw2=student-1
+  t+ 9s  200 x152                     avg    6 ms  p95   15 ms   ejected: gw1=student-1 gw2=student-1
+  t+10s  200 x146                     avg    7 ms  p95   19 ms   ejected: gw1=student-1 gw2=student-1
+  t+11s  200 x154                     avg    6 ms  p95    8 ms   ejected: gw1=student-1 gw2=student-1
+  t+12s  200 x137                     avg    8 ms  p95   19 ms   ejected: gw1=- gw2=student-1
+  t+13s  200 x17                      avg  201 ms  p95  854 ms   ejected: gw1=student-1 gw2=-
+  t+14s  200 x37                      avg   98 ms  p95  853 ms   ejected: gw1=student-1 gw2=student-1
+  t+15s  200 x154                     avg    6 ms  p95    8 ms   ejected: gw1=student-1 gw2=student-1
+  t+16s  200 x137                     avg    9 ms  p95   19 ms   ejected: gw1=student-1 gw2=student-1
+  t+17s  200 x153                     avg    6 ms  p95   11 ms   ejected: gw1=student-1 gw2=student-1
+  t+18s  >> student-1 healthy again (latencyMs 0)
+  t+18s  200 x148                     avg    7 ms  p95   11 ms   ejected: gw1=student-1 gw2=student-1
+  t+19s  200 x151                     avg    6 ms  p95   11 ms   ejected: gw1=student-1 gw2=student-1
+  t+20s  200 x149                     avg    7 ms  p95   12 ms   ejected: gw1=student-1 gw2=student-1
+  t+21s  200 x149                     avg    7 ms  p95   11 ms   ejected: gw1=student-1 gw2=student-1
+  t+22s  200 x154                     avg    6 ms  p95   11 ms   ejected: gw1=student-1 gw2=student-1
+  t+23s  200 x140                     avg    8 ms  p95   18 ms   ejected: gw1=- gw2=student-1
+  the gauge is instance_ejected{target} on each gateway's /metrics (Grafana panel "Outlier ejection")
+  Grafana (this step): http://localhost:3000/d/university?from=1794257007745&to=1794257061823
+(exit 0)

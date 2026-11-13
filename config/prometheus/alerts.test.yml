@@ -1,0 +1,215 @@
+# promtool unit tests for alerts.yml: `npm run test:alerts`.
+# For each alert: a series that crosses the threshold fires at eval_time = `for` + one 2 s
+# evaluation interval, and a series just under the threshold (or a blip shorter than `for`)
+# does not. exp_alerts lists *firing* alerts only, so an empty list also rules out a pending
+# alert that has already been promoted.
+rule_files:
+  - alerts.yml
+
+evaluation_interval: 2s
+
+tests:
+  # ---------------------------------------------------------------- InstanceDown
+  - interval: 2s
+    input_series:
+      - series: 'up{job="university", instance="student-1:3000"}'
+        values: '0x10'
+      - series: 'up{job="university", instance="student-2:3000"}'
+        values: '1x10'
+      - series: 'up{job="postgres", instance="postgres-exporter:9187"}'  # other jobs are not "instances"
+        values: '0x10'
+    alert_rule_test:
+      - eval_time: 2s          # pending, not yet firing
+        alertname: InstanceDown
+        exp_alerts: []
+      - eval_time: 6s          # for (4s) + one interval
+        alertname: InstanceDown
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: university
+              instance: student-1:3000
+            exp_annotations:
+              summary: "student-1:3000 has missed Prometheus scrapes for 4s"
+              threshold: "up == 0 for 4s (two consecutive 2s scrapes)"
+              response: "Restart policy self-heals in midterm/endterm; if still firing after 60s, on-call checks docker compose ps and the instance logs by rid."
+
+  - interval: 2s               # a single missed scrape (shorter than for) does not fire
+    input_series:
+      - series: 'up{job="university", instance="student-1:3000"}'
+        values: '0 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 6s
+        alertname: InstanceDown
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- DatabaseDown
+  - interval: 2s
+    input_series:
+      - series: 'pg_up{job="postgres", instance="postgres-exporter:9187"}'
+        values: '0x10'
+    alert_rule_test:
+      - eval_time: 6s
+        alertname: DatabaseDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: postgres
+              instance: postgres-exporter:9187
+            exp_annotations:
+              summary: "PostgreSQL primary is unreachable (pg_up == 0)"
+              threshold: "pg_up == 0 for 4s"
+              response: "Reads fail over to the hot standby and writes fail fast (midterm/endterm); the operator restores the primary. In baseline every DB-backed route fails."
+
+  - interval: 2s
+    input_series:
+      - series: 'pg_up{job="postgres", instance="postgres-exporter:9187"}'
+        values: '1x10'
+    alert_rule_test:
+      - eval_time: 6s
+        alertname: DatabaseDown
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- HighErrorRate
+  - interval: 2s               # 10 of 100 responses across both gateways are 5xx: 10% > 5%
+    input_series:
+      - series: 'http_requests_total{svc="gateway-1", method="GET", route="/api/{pool}/{path:path}", status="200"}'
+        values: '0+90x20'
+      - series: 'http_requests_total{svc="gateway-2", method="GET", route="/api/{pool}/{path:path}", status="503"}'
+        values: '0+10x20'
+      - series: 'http_requests_total{svc="student-1", method="GET", route="/students/{id}", status="200"}'
+        values: '0+1000x20'    # services behind the gateway are not part of the ratio
+    alert_rule_test:
+      - eval_time: 8s          # rate needs two samples (2s), then for (6s)
+        alertname: HighErrorRate
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+            exp_annotations:
+              summary: "More than 5% of gateway responses are 5xx (15s window)"
+              threshold: "5xx share of gateway http_requests_total over [15s] > 0.05, for 6s"
+              response: "Check upstream_attempts_total by instance and outcome, and circuit_breaker_open; isolate the failing replica or dependency."
+
+  - interval: 2s               # 4% 5xx: under the threshold
+    input_series:
+      - series: 'http_requests_total{svc="gateway-1", method="GET", route="/api/{pool}/{path:path}", status="200"}'
+        values: '0+96x20'
+      - series: 'http_requests_total{svc="gateway-1", method="GET", route="/api/{pool}/{path:path}", status="503"}'
+        values: '0+4x20'
+    alert_rule_test:
+      - eval_time: 8s
+        alertname: HighErrorRate
+        exp_alerts: []
+
+  - interval: 2s               # 5xx on a backend service only: not a gateway error rate
+    input_series:
+      - series: 'http_requests_total{svc="gateway-1", method="GET", route="/api/{pool}/{path:path}", status="200"}'
+        values: '0+100x20'
+      - series: 'http_requests_total{svc="student-1", method="GET", route="/students/{id}", status="503"}'
+        values: '0+100x20'
+    alert_rule_test:
+      - eval_time: 8s
+        alertname: HighErrorRate
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- HighLatencyP95
+  - interval: 2s               # every request lands in (1s, 2.5s]: p95 > 1s
+    input_series:
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="0.5"}'
+        values: '0x20'
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="0.8"}'
+        values: '0x20'
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="1"}'
+        values: '0x20'
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="2.5"}'
+        values: '0+50x20'
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="+Inf"}'
+        values: '0+50x20'
+    alert_rule_test:
+      - eval_time: 8s
+        alertname: HighLatencyP95
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: "Gateway p95 latency is above 1s (15s window)"
+              threshold: "histogram_quantile(0.95, gateway http_request_duration_seconds over [15s]) > 1s, for 6s"
+              response: "Look for a slow instance (upstream_attempts_total timeouts, instance_ejected) and the DB; eject or scale the slow replica."
+
+  - interval: 2s               # every request lands in (0.5s, 0.8s]: p95 under 1s
+    input_series:
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="0.5"}'
+        values: '0x20'
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="0.8"}'
+        values: '0+50x20'
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="1"}'
+        values: '0+50x20'
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="2.5"}'
+        values: '0+50x20'
+      - series: 'http_request_duration_seconds_bucket{svc="gateway-1", route="/api/{pool}/{path:path}", le="+Inf"}'
+        values: '0+50x20'
+    alert_rule_test:
+      - eval_time: 8s
+        alertname: HighLatencyP95
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- AuthFailureSpike
+  - interval: 2s               # 6 denials per 2s scrape = 3/s > 2/s
+    input_series:
+      - series: 'auth_denied_total{svc="gateway-1", reason="bad_signature"}'
+        values: '0+6x30'
+    # rate() over [30s] divides by the whole window, so a spike that starts at t=0 only
+    # crosses 2/s once more than 60 denials are inside it: pending at 22s, firing at 26s
+    # (crossing + for 4s). Detection latency for a spike of r/s is about 60/r + 4 seconds.
+    alert_rule_test:
+      - eval_time: 24s         # pending
+        alertname: AuthFailureSpike
+        exp_alerts: []
+      - eval_time: 26s         # crossing (22s) + for (4s)
+        alertname: AuthFailureSpike
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: "More than 2 requests per second denied by authentication, authorization or rate limiting (30s window)"
+              threshold: "sum(rate(auth_denied_total[30s])) > 2, for 4s"
+              response: "Possible intrusion attempt: review the audit log by rid and sub; block the source or revoke the credentials."
+
+  - interval: 2s               # 3 denials per 2s scrape = 1.5/s: a user mistyping, not an attack
+    input_series:
+      - series: 'auth_denied_total{svc="gateway-1", reason="bad_signature"}'
+        values: '0+3x30'
+    alert_rule_test:
+      - eval_time: 60s         # window fully covered: 1.5/s
+        alertname: AuthFailureSpike
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- PaymentsStuckPending
+  - interval: 2s
+    input_series:
+      - series: 'payments_stale_pending{job="university", instance="payment-1:3000"}'
+        values: '1x20'
+      - series: 'payments_stale_pending{job="university", instance="payment-2:3000"}'
+        values: '0x20'         # max(): one payment replica that sees it is enough
+    alert_rule_test:
+      - eval_time: 8s          # still pending (for is 10s)
+        alertname: PaymentsStuckPending
+        exp_alerts: []
+      - eval_time: 12s         # for (10s) + one interval
+        alertname: PaymentsStuckPending
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+            exp_annotations:
+              summary: "1 payment(s) still pending 15s after creation"
+              threshold: "max(payments_stale_pending) > 0, for 10s"
+              response: "Lost or interrupted transaction: confirm the rollback sweep ran (midterm/endterm); in baseline reconcile the payment manually against the ledger."
+
+  - interval: 2s
+    input_series:
+      - series: 'payments_stale_pending{job="university", instance="payment-1:3000"}'
+        values: '0x20'
+    alert_rule_test:
+      - eval_time: 12s
+        alertname: PaymentsStuckPending
+        exp_alerts: []

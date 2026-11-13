@@ -1,0 +1,13 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 71,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "AuthFailureSpike",
+      "firstPendingTs": 1794255508848,
+      "firstFiringTs": 1794255512911,
+      "resolvedTs": 1794255538922
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+$ npm run demo -- unauthorized
+deployed mode: endterm   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Unauthorized access: missing, forged, expired and alg:none tokens; s7 pays for s8 ==
+  expected in endterm: no token / forged / expired / alg:none -> 401, s7 paying for s8 -> 403; one audit deny line per rid; DB unchanged
+  each attack is POST /api/payments {studentId: "s8", amount: 13.37}
+  no token                         -> 401   rid=attack-demo-1794257006877-0
+  forged signature (admin claims)  -> 401   rid=attack-demo-1794257006877-1
+  expired token (admin claims)     -> 401   rid=attack-demo-1794257006877-2
+  alg:none token (admin claims)    -> 401   rid=attack-demo-1794257006877-3
+  student s7 pays for s8           -> 403   rid=attack-demo-1794257006877-4
+  audit lines for these rids (logs/events.jsonl):
+    gateway-2  rid=attack-demo-1794257006877-0  deny 401 missing_token  POST /api/payments  sub=-
+    gateway-1  rid=attack-demo-1794257006877-1  deny 401 bad_signature  POST /api/payments  sub=-
+    gateway-2  rid=attack-demo-1794257006877-2  deny 401 expired  POST /api/payments  sub=-
+    gateway-1  rid=attack-demo-1794257006877-3  deny 401 malformed  POST /api/payments  sub=-
+    gateway-2  rid=attack-demo-1794257006877-4  deny 403 not_owner  POST /api/payments  sub=s7 (student)
+  attacker payments in the DB (amount 13.37): before 0, after 0
+  PASS: all 5 refused (401 x4  403 x1); DB unchanged
+  follow one request through every hop: grep attack-demo-1794257006877-0 logs/events.jsonl
+  Grafana (this step): http://localhost:3000/d/university?from=1794256991819&to=1794257023272
+(exit 0)

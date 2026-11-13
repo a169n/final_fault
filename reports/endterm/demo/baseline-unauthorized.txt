@@ -1,0 +1,19 @@
+$ npm run demo -- unauthorized
+deployed mode: baseline   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Unauthorized access: missing, forged, expired and alg:none tokens; s7 pays for s8 ==
+  expected in baseline: no authentication: every attack is ACCEPTED (2xx) and the attacker payments reach the DB; no audit lines
+  each attack is POST /api/payments {studentId: "s8", amount: 13.37}
+  (baseline: no login, so the s7 attack goes out without a token as well)
+  no token                         -> 201   rid=attack-demo-1794257195787-0
+  forged signature (admin claims)  -> 201   rid=attack-demo-1794257195787-1
+  expired token (admin claims)     -> 201   rid=attack-demo-1794257195787-2
+  alg:none token (admin claims)    -> 201   rid=attack-demo-1794257195787-3
+  student s7 pays for s8           -> 201   rid=attack-demo-1794257195787-4
+  audit lines for these rids (logs/events.jsonl):
+    (none: baseline has no policy enforcement point)
+  attacker payments in the DB (amount 13.37): before 0, after 5
+  ACCEPTED: 5 of 5 unauthorized requests answered 2xx; 5 attacker payment(s) written to the DB
+  follow one request through every hop: grep attack-demo-1794257195787-0 logs/events.jsonl
+  Grafana (this step): http://localhost:3000/d/university?from=1794257180787&to=1794257212241
+(exit 0)

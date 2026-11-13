@@ -1,0 +1,19 @@
+$ npm run demo -- alerts
+deployed mode: endterm   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Alerting: Prometheus alerts during a database failure ==
+  expected in endterm: DatabaseDown fires; HighErrorRate may fire (payments fail, reads are served)
+  alerts before: (none firing or pending)   (http://localhost:9090/alerts)
+  t+0.4s  >> postgres-primary stopped
+  t+0.4s  (none)
+  t+4.4s  pending  DatabaseDown
+  t+8.5s  firing   DatabaseDown
+  DatabaseDown firing 8.5 s after the stop (1 s polling)
+  t+10.5s  firing   DatabaseDown | pending  HighErrorRate | pending  HighLatencyP95
+  t+16.9s  >> postgres-primary started
+  t+16.9s  firing   DatabaseDown | firing   HighErrorRate | firing   HighLatencyP95
+  t+18.9s  firing   HighErrorRate | firing   HighLatencyP95
+  DatabaseDown resolved 2.0 s after the restart
+  client traffic during the demo: 200 x27  201 x15  203 x27  503 x11
+  Grafana (this step): http://localhost:3000/d/university?from=1794257035758&to=1794257085556
+(exit 0)

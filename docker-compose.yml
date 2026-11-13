@@ -1,0 +1,257 @@
+
+x-service: &service
+  build: .
+  image: university-app:local               # one image for every service; built once
+  restart: ${RESTART_POLICY:-no}            # H3 self-healing
+  environment: &service-env
+    FT_ENABLED: ${FT_ENABLED:-0}            # baseline (0) or FT (1)
+    ENDTERM_ENABLED: ${ENDTERM_ENABLED:-0}  # with FT=1: midterm (0) or endterm (1)
+    FINAL_ENABLED: ${FINAL_ENABLED:-0}      # with ENDTERM=1: endterm (0) or final (1)
+    LOG_DIR: /logs
+    # least-privilege role app_rw (no DELETE/TRUNCATE/DDL); password generated into .env (Task 12)
+    DATABASE_URL: postgresql://app_rw:${APP_DB_PASSWORD:?run npm run up:<mode> to generate .env}@postgres-primary:5432/university
+    DATABASE_REPLICA_URL: postgresql://app_rw:${APP_DB_PASSWORD:?run npm run up:<mode> to generate .env}@postgres-replica:5432/university
+    PORT: 3000                              # uvicorn port, read by the healthcheck (gateway: 8080)
+  volumes:
+    - ./logs:/logs                          # every service appends to logs/events.jsonl
+  healthcheck:                              # liveness only: a DB outage must not mark app containers unhealthy
+    test: ["CMD", "python", "-c", "import os,urllib.request;urllib.request.urlopen(f'http://localhost:{os.environ[\"PORT\"]}/health/live',timeout=1)"]
+    interval: 2s
+    timeout: 2s
+    retries: 3
+    start_period: 5s
+  depends_on:
+    postgres-primary:
+      condition: service_healthy
+
+# The services that expose /chaos (student, payment, timetable, transcript). In endterm every /chaos*
+# request must carry x-chaos-token == CHAOS_TOKEN (app/fault_injection.py, Task 12), so only they get it.
+x-chaos-env: &chaos-env
+  <<: *service-env
+  CHAOS_TOKEN: ${CHAOS_TOKEN:?run npm run up:<mode> to generate .env}
+
+services:
+
+  # Entry point. nginx publishes :8080 and proxies to the gateway(s); NGINX_PROFILE picks the config:
+  #   single    (baseline, midterm): gateway-1 only, a pass-through, same topology as the midterm
+  #   redundant (endterm): gateway-1 + gateway-2 with failover, so the gateway is no SPOF
+  nginx:
+    image: nginx:1.27-alpine
+    restart: ${RESTART_POLICY:-no}          # H3
+    volumes:
+      - ./config/nginx/${NGINX_PROFILE:-single}.conf:/etc/nginx/nginx.conf:ro
+    ports: ["8080:80"]                      # the only port published beyond the host: clients use this
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health/live"]
+      interval: 2s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
+    depends_on:
+      gateway-1:
+        condition: service_healthy
+      gateway-2:
+        condition: service_healthy
+
+  gateway-1:                                # H1 load balancer; the only gateway in rotation for baseline/midterm
+    <<: *service
+    command: uvicorn app.services.gateway:app --host 0.0.0.0 --port 8080
+    environment: &gateway-env
+      <<: *service-env
+      SERVICE_NAME: gateway-1
+      PORT: 8080
+      STUDENT_URLS: http://student-1:3000,http://student-2:3000   # H1: replica pools
+      PAYMENT_URLS: http://payment-1:3000,http://payment-2:3000
+      TRANSCRIPT_URLS: http://transcript-1:3000
+      TIMETABLE_URLS: http://timetable-1:3000,http://timetable-2:3000
+      AUTH_URLS: http://auth-1:3000                               # POST /auth/token is relayed here
+      JWT_SECRET: ${JWT_SECRET:?run npm run up:<mode> to generate .env}   # tokens are verified locally (Task 9)
+    ports: ["127.0.0.1:8081:8080"]          # direct access for the harness and debugging; clients use nginx
+
+  gateway-2:                                # redundant gateway, in nginx rotation only in endterm (redundant.conf)
+    <<: *service
+    command: uvicorn app.services.gateway:app --host 0.0.0.0 --port 8080
+    environment:
+      <<: *gateway-env
+      SERVICE_NAME: gateway-2
+    ports: ["127.0.0.1:8082:8080"]
+
+  auth-1:                                   # issues short-lived JWTs (POST /token); seeds demo users on start
+    <<: *service
+    command: uvicorn app.services.auth:app --host 0.0.0.0 --port 3000
+    environment:
+      <<: *service-env
+      SERVICE_NAME: auth-1
+      JWT_SECRET: ${JWT_SECRET:?run npm run up:<mode> to generate .env}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?run npm run up:<mode> to generate .env}   # admin, bursar, s7, s8
+    ports: ["127.0.0.1:3051:3000"]
+
+  student-1:                                # replica 1 · node A
+    <<: *service
+    command: uvicorn app.services.student:app --host 0.0.0.0 --port 3000
+    environment: { <<: *chaos-env, SERVICE_NAME: student-1 }
+    ports: ["127.0.0.1:3011:3000"]
+
+  student-2:                                # replica 2 · node B
+    <<: *service
+    command: uvicorn app.services.student:app --host 0.0.0.0 --port 3000
+    environment: { <<: *chaos-env, SERVICE_NAME: student-2 }
+    ports: ["127.0.0.1:3012:3000"]
+
+  payment-1:                                # replica 1 · node A
+    <<: *service
+    command: uvicorn app.services.payment:app --host 0.0.0.0 --port 3000
+    environment: { <<: *chaos-env, SERVICE_NAME: payment-1 }
+    ports: ["127.0.0.1:3021:3000"]
+
+  payment-2:                                # replica 2 · node B
+    <<: *service
+    command: uvicorn app.services.payment:app --host 0.0.0.0 --port 3000
+    environment: { <<: *chaos-env, SERVICE_NAME: payment-2 }
+    ports: ["127.0.0.1:3022:3000"]
+
+  timetable-1:                              # replica 1 · node A
+    <<: *service
+    command: uvicorn app.services.timetable:app --host 0.0.0.0 --port 3000
+    environment: { <<: *chaos-env, SERVICE_NAME: timetable-1 }
+    ports: ["127.0.0.1:3041:3000"]
+
+  timetable-2:                              # replica 2 · node B
+    <<: *service
+    command: uvicorn app.services.timetable:app --host 0.0.0.0 --port 3000
+    environment: { <<: *chaos-env, SERVICE_NAME: timetable-2 }
+    ports: ["127.0.0.1:3042:3000"]
+
+  transcript-1:                             # 1 instance, covered by S7 cache
+    <<: *service
+    command: uvicorn app.services.transcript:app --host 0.0.0.0 --port 3000
+    environment: { <<: *chaos-env, SERVICE_NAME: transcript-1 }
+    ports: ["127.0.0.1:3031:3000"]
+
+  # The two database nodes run the same start script (config/postgres/scripts/node.sh), so either
+  # can be primary or standby. Baseline, midterm and endterm never swap them. In final the database
+  # controller promotes the standby when the primary is gone (H6), and a stale primary that is
+  # started again rebuilds itself as a standby of the new primary.
+  postgres-primary:                         # H2: the primary at first start
+    image: postgres:16
+    restart: ${RESTART_POLICY:-no}          # H3
+    environment: &pg-env
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?run npm run up:<mode> to generate .env}  # superuser, operator only
+      POSTGRES_DB: university
+      POSTGRES_INITDB_ARGS: --data-checksums   # H4
+      # 00-roles.sh creates the roles with these on first initialisation of the volume
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?run npm run up:<mode> to generate .env}
+      REPL_PASSWORD: ${REPL_PASSWORD:?run npm run up:<mode> to generate .env}
+      MONITOR_DB_PASSWORD: ${MONITOR_DB_PASSWORD:?run npm run up:<mode> to generate .env}
+      FAILOVER_DB_PASSWORD: ${FAILOVER_DB_PASSWORD:?run npm run up:<mode> to generate .env}
+      BACKUP_DB_PASSWORD: ${BACKUP_DB_PASSWORD:?run npm run up:<mode> to generate .env}
+    entrypoint: ["bash", "/scripts/node.sh", "primary", "postgres-replica"]
+    volumes:
+      - ./config/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./config/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./config/postgres/scripts:/scripts:ro
+      - pgprimary:/var/lib/postgresql/data
+    ports: ["127.0.0.1:55432:5432"]   # 5432 often taken locally; host-only, password required (pg_hba.conf)
+    healthcheck: &pg-health
+      test: ["CMD-SHELL", "pg_isready -U postgres -d university"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  postgres-replica:                         # H2: the hot standby at first start, serves reads
+    image: postgres:16
+    restart: ${RESTART_POLICY:-no}          # H3
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    environment: *pg-env
+    entrypoint: ["bash", "/scripts/node.sh", "standby", "postgres-primary"]
+    volumes:
+      - ./config/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro   # same rules as the primary
+      - ./config/postgres/scripts:/scripts:ro
+      - pgreplica:/var/lib/postgresql/data
+    ports: ["127.0.0.1:55433:5432"]
+    healthcheck: *pg-health
+
+  # H6: observes both nodes in every mode (metrics only); in final it also promotes the standby,
+  # fences a stale primary and switches synchronous replication (app/services/db_controller.py).
+  db-controller:
+    <<: *service
+    restart: unless-stopped                 # part of the control and monitoring plane
+    command: uvicorn app.services.db_controller:app --host 0.0.0.0 --port 3000
+    environment:
+      FT_ENABLED: ${FT_ENABLED:-0}
+      ENDTERM_ENABLED: ${ENDTERM_ENABLED:-0}
+      FINAL_ENABLED: ${FINAL_ENABLED:-0}
+      LOG_DIR: /logs
+      PORT: 3000
+      SERVICE_NAME: db-controller
+      DB_NODES: "postgres-primary=postgresql://failover:${FAILOVER_DB_PASSWORD:?run npm run up:<mode> to generate .env}@postgres-primary:5432/university,postgres-replica=postgresql://failover:${FAILOVER_DB_PASSWORD:?run npm run up:<mode> to generate .env}@postgres-replica:5432/university"
+    volumes:
+      - ./logs:/logs
+      - ./backups:/backups:ro               # reads latest.json for backup_last_success_timestamp_seconds
+    ports: ["127.0.0.1:3061:3000"]
+
+  # H7: periodic verified pg_dump (config/postgres/scripts/backup.sh). Enabled only in final.
+  db-backup:
+    image: postgres:16
+    restart: unless-stopped
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    environment:
+      BACKUP_ENABLED: ${FINAL_ENABLED:-0}
+      BACKUP_INTERVAL_S: ${BACKUP_INTERVAL_S:-15}   # short on purpose: an experiment lasts 70 to 600 s
+      BACKUP_KEEP: ${BACKUP_KEEP:-20}
+      BACKUP_DB_PASSWORD: ${BACKUP_DB_PASSWORD:?run npm run up:<mode> to generate .env}
+    entrypoint: ["bash", "/scripts/backup.sh"]
+    volumes:
+      - ./config/postgres/scripts:/scripts:ro
+      - ./backups:/backups
+
+  # Monitoring plane (H5): always on, in every mode, so the three configurations are measured
+  # the same way. It is measurement infrastructure, not behaviour under test, so it restarts
+  # on its own whatever RESTART_POLICY the mode uses.
+  prometheus:                               # scrapes every 2 s, evaluates alerts.yml every 2 s
+    image: prom/prometheus:v2.53.0
+    restart: unless-stopped
+    volumes:
+      - ./config/prometheus:/etc/prometheus:ro   # prometheus.yml + alerts.yml
+    ports: ["127.0.0.1:9090:9090"]
+
+  postgres-exporter:                        # pg_up, pg_stat_* for postgres-primary (DatabaseDown)
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: postgresql://monitor:${MONITOR_DB_PASSWORD:?run npm run up:<mode> to generate .env}@postgres-primary:5432/university?sslmode=disable&connect_timeout=1
+    ports: ["127.0.0.1:9187:9187"]
+
+  postgres-exporter-replica:                # the same for postgres-replica: after a failover it is the primary
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: postgresql://monitor:${MONITOR_DB_PASSWORD:?run npm run up:<mode> to generate .env}@postgres-replica:5432/university?sslmode=disable&connect_timeout=1
+    ports: ["127.0.0.1:9188:9187"]
+
+  grafana:                                  # dashboard "university", anonymous read-only
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    depends_on: [prometheus]
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?run npm run up:<mode> to generate .env}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"     # viewers need no login; only admin can edit
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/university.json
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["127.0.0.1:3000:3000"]
+
+volumes:
+  pgprimary:
+  pgreplica:

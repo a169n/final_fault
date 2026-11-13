@@ -1,0 +1,125 @@
+# Alert rules. The names are a contract: the endterm scenarios (experiments/scenarios.ts)
+# list them as mustFire / mayFire, and reports/endterm/ALERTS.md documents each one.
+# Every rule carries three annotations: summary (what it detects), threshold, and response
+# (what the system does on its own and what the operator should do).
+# Unit tests: config/prometheus/alerts.test.yml (`npm run test:alerts`).
+#
+# Gateway series are matched with svc=~"gateway.*" so the rules keep working when the single
+# gateway becomes gateway-1/gateway-2 behind nginx.
+groups:
+  - name: university
+    rules:
+      - alert: InstanceDown
+        expr: up{job="university"} == 0
+        for: 4s
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} has missed Prometheus scrapes for 4s"
+          threshold: "up == 0 for 4s (two consecutive 2s scrapes)"
+          response: "Restart policy self-heals in midterm/endterm; if still firing after 60s, on-call checks docker compose ps and the instance logs by rid."
+
+      - alert: DatabaseDown
+        expr: pg_up == 0
+        for: 4s
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL node behind {{ $labels.instance }} is unreachable (pg_up == 0)"
+          threshold: "pg_up == 0 for 4s"
+          response: "Reads fail over to the other node and writes fail fast (midterm/endterm); in final the controller promotes the standby. The operator restarts the node. In baseline every DB-backed route fails."
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{svc=~"gateway.*", status=~"5.."}[15s]))
+            / sum(rate(http_requests_total{svc=~"gateway.*"}[15s]))
+            > 0.05
+        for: 6s
+        labels:
+          severity: critical
+        annotations:
+          summary: "More than 5% of gateway responses are 5xx (15s window)"
+          threshold: "5xx share of gateway http_requests_total over [15s] > 0.05, for 6s"
+          response: "Check upstream_attempts_total by instance and outcome, and circuit_breaker_open; isolate the failing replica or dependency."
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(http_request_duration_seconds_bucket{svc=~"gateway.*"}[15s])))
+            > 1
+        for: 6s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Gateway p95 latency is above 1s (15s window)"
+          threshold: "histogram_quantile(0.95, gateway http_request_duration_seconds over [15s]) > 1s, for 6s"
+          response: "Look for a slow instance (upstream_attempts_total timeouts, instance_ejected) and the DB; eject or scale the slow replica."
+
+      - alert: AuthFailureSpike
+        expr: sum(rate(auth_denied_total[30s])) > 2
+        for: 4s
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 2 requests per second denied by authentication, authorization or rate limiting (30s window)"
+          threshold: "sum(rate(auth_denied_total[30s])) > 2, for 4s"
+          response: "Possible intrusion attempt: review the audit log by rid and sub; block the source or revoke the credentials."
+
+      - alert: PaymentsStuckPending
+        expr: max(payments_stale_pending) > 0
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $value }} payment(s) still pending 15s after creation"
+          threshold: "max(payments_stale_pending) > 0, for 10s"
+          response: "Lost or interrupted transaction: confirm the rollback sweep ran (midterm/endterm); in baseline reconcile the payment manually against the ledger."
+
+      # ---- final: database failover, redundancy and backups (db-controller metrics) ----
+      - alert: DatabaseNoWriter
+        expr: db_writer_available == 0
+        for: 4s
+        labels:
+          severity: critical
+        annotations:
+          summary: "No PostgreSQL node accepts writes"
+          threshold: "db_writer_available == 0 for 4s"
+          response: "Final: the controller promotes the standby after 3 failed probes; if this keeps firing, promotion was refused (db_failover_refused_total) or both nodes are down. Other modes: the operator restores the primary."
+
+      - alert: DatabaseRedundancyLost
+        expr: db_writer_available == 1 and db_standby_streaming == 0
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "The primary has no streaming standby: the database is a single point of failure"
+          threshold: "db_writer_available == 1 and db_standby_streaming == 0, for 10s"
+          response: "Restart the missing node (docker compose start <node>); it rejoins as a standby on its own. Until then a second database failure loses the write path, and synchronous replication is off."
+
+      - alert: DatabaseFailover
+        expr: increase(db_failovers_total[1m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "The controller promoted the standby in the last minute"
+          threshold: "increase(db_failovers_total[1m]) > 0"
+          response: "Informational: writes moved to the other node. Find out why the old primary failed, then restart it so that it rejoins as a standby."
+
+      - alert: BackupStale
+        expr: time() - backup_last_success_timestamp_seconds > 60
+        for: 4s
+        labels:
+          severity: warning
+        annotations:
+          summary: "No verified backup for more than 60s (the interval is 15s)"
+          threshold: "time() - backup_last_success_timestamp_seconds > 60, for 4s"
+          response: "Check the db-backup container log. The recovery point is getting older with every missed backup."
+
+      - alert: PaymentRecordsLost
+        expr: max(payments_completed_rows) - max(payments_completed_rows offset 10s) < 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "The number of completed payments went down"
+          threshold: "max(payments_completed_rows) is lower than 10s ago"
+          response: "The application cannot delete payments, so records were destroyed outside it (operator error, bad migration, compromised superuser). Stop writes if possible and restore from the newest backup: npm run db:restore."

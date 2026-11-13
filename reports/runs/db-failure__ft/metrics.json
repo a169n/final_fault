@@ -1,0 +1,112 @@
+{
+  "scenario": "db-failure",
+  "mode": "ft",
+  "t0": 1790083558518,
+  "t1": 1790083629027,
+  "injectTs": 1790083578518,
+  "repairTs": 1790083603518,
+  "metrics": {
+    "observationMs": 70509,
+    "requests": {
+      "total": 8704,
+      "successful": 8172,
+      "failed": 532,
+      "degraded": 1422,
+      "clientTimeouts": 0
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 0.9388786764705882,
+      "upBins": 60,
+      "downBins": 0,
+      "idleBins": 11
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": 367,
+      "recoveryMs": null,
+      "absorptionMs": 33922,
+      "faultMasked": false,
+      "detectionSource": "client-visible failure",
+      "p50Ms": 7,
+      "p95Ms": 20,
+      "p99Ms": 63,
+      "maxMs": 2566
+    },
+    "mechanisms": {
+      "failedCallAttempts": 236,
+      "retriesThatSucceeded": 7,
+      "breakerOpened": 3,
+      "degradedResponses": 1591,
+      "replicaReads": 169,
+      "duplicatesSuppressed": 230,
+      "checkpointsRolledBack": 0,
+      "healthTransitions": [
+        {
+          "ts": 1790083579668,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1790083579970,
+          "target": "http://payment-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1790083579972,
+          "target": "http://student-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1790083579973,
+          "target": "http://student-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1790083607338,
+          "target": "http://student-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1790083607338,
+          "target": "http://student-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1790083608648,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1790083611260,
+          "target": "http://payment-1:3000",
+          "ok": true
+        }
+      ]
+    }
+  },
+  "consistency": {
+    "paymentRequestsSent": 1970,
+    "paymentRequestsAccepted": 1439,
+    "distinctPaymentIntents": 1646,
+    "deduplicatedResponses": 230,
+    "duplicateCharges": 0,
+    "unacknowledgedIntents": 437,
+    "completedInDb": 1209,
+    "dbVsIntents": -437,
+    "orphanedPending": 0,
+    "rolledBack": 0,
+    "failedPay": 0,
+    "totalCharged": 120900,
+    "ledgerBalanced": true
+  }
+}

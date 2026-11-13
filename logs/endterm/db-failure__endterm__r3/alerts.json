@@ -1,0 +1,25 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 71,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "DatabaseDown",
+      "firstPendingTs": 1794255658848,
+      "firstFiringTs": 1794255663716,
+      "resolvedTs": 1794255683714
+    },
+    {
+      "name": "HighErrorRate",
+      "firstPendingTs": 1794255666848,
+      "firstFiringTs": 1794255673714,
+      "resolvedTs": 1794255699719
+    },
+    {
+      "name": "HighLatencyP95",
+      "firstPendingTs": 1794255668848,
+      "firstFiringTs": 1794255675714,
+      "resolvedTs": 1794255689717
+    }
+  ]
+}

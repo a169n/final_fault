@@ -1,0 +1,255 @@
+{
+  "scenario": "error-spike",
+  "title": "Error spike (student and payment replicas fail every request)",
+  "kind": "monitoring",
+  "mode": "midterm",
+  "rep": 1,
+  "runId": "error-spike-midterm-r1-1794252301381",
+  "t0": 1794252301384,
+  "t1": 1794252371893,
+  "injectTs": 1794252321383,
+  "repairTs": 1794252346385,
+  "restore": {
+    "ok": true,
+    "durationMs": 1637,
+    "healthy": true,
+    "replicationStreaming": true,
+    "chaosReset": {
+      "3011": true,
+      "3012": true,
+      "3021": true,
+      "3022": true,
+      "3031": true,
+      "3041": true,
+      "3042": true
+    },
+    "dbReset": true,
+    "alertsClear": true,
+    "firingAtStart": []
+  },
+  "expectedAlerts": {
+    "mustFire": [
+      "HighErrorRate"
+    ],
+    "mayFire": [
+      "InstanceDown"
+    ]
+  },
+  "alertCorrectness": {
+    "correct": true,
+    "missing": [],
+    "unexpected": []
+  },
+  "metrics": {
+    "observationMs": 70509,
+    "requests": {
+      "total": 12321,
+      "successful": 11141,
+      "failed": 1180,
+      "degraded": 2832,
+      "clientTimeouts": 0,
+      "rateLimited": 0,
+      "errorRate": 0.09577144712279848
+    },
+    "throughput": {
+      "preFaultRps": 164.6082304115206,
+      "duringFaultRps": 143.7884969202464,
+      "postRepairRps": 166.7712090324604
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 0.9042285528772015,
+      "readRequestBased": 1,
+      "upBins": 70,
+      "downBins": 0,
+      "idleBins": 1
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": 33,
+      "recoveryMs": null,
+      "absorptionMs": 25730,
+      "faultMasked": false,
+      "detectionSource": "failed call attempt",
+      "avgMs": 8.944259940759357,
+      "p50Ms": 7,
+      "p95Ms": 22,
+      "p99Ms": 39,
+      "maxMs": 150
+    },
+    "mechanisms": {
+      "failedCallAttempts": 51,
+      "retriesThatSucceeded": 0,
+      "breakerOpened": 2,
+      "degradedResponses": 2832,
+      "replicaReads": 0,
+      "duplicatesSuppressed": 250,
+      "checkpointsRolledBack": 0,
+      "healthTransitions": []
+    },
+    "alerts": [
+      {
+        "name": "HighErrorRate",
+        "fired": true,
+        "detectionMs": 10003,
+        "resolvedAfterRepairMs": 15008,
+        "firstPendingTs": 1794252324848,
+        "firstFiringTs": 1794252331386,
+        "resolvedTs": 1794252361393
+      }
+    ],
+    "resources": [
+      {
+        "name": "fault-tolerance-auth-1-1",
+        "maxCpuPct": 12.52,
+        "maxMemMiB": 68.03,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-gateway-1-1",
+        "maxCpuPct": 63.91,
+        "maxMemMiB": 56.36,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-gateway-2-1",
+        "maxCpuPct": 12.65,
+        "maxMemMiB": 52.8,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-grafana-1",
+        "maxCpuPct": 0.47,
+        "maxMemMiB": 44.68,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-nginx-1",
+        "maxCpuPct": 6.13,
+        "maxMemMiB": 10.7,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-payment-1-1",
+        "maxCpuPct": 16.44,
+        "maxMemMiB": 52.43,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-payment-2-1",
+        "maxCpuPct": 18.25,
+        "maxMemMiB": 52.77,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-exporter-1",
+        "maxCpuPct": 2.7,
+        "maxMemMiB": 10.8,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-primary-1",
+        "maxCpuPct": 14.68,
+        "maxMemMiB": 123,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-postgres-replica-1",
+        "maxCpuPct": 1.98,
+        "maxMemMiB": 39.77,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-prometheus-1",
+        "maxCpuPct": 2.17,
+        "maxMemMiB": 42.04,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-student-1-1",
+        "maxCpuPct": 18.2,
+        "maxMemMiB": 52.68,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-student-2-1",
+        "maxCpuPct": 19.74,
+        "maxMemMiB": 52.82,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-timetable-1-1",
+        "maxCpuPct": 12.23,
+        "maxMemMiB": 46.85,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-timetable-2-1",
+        "maxCpuPct": 12.07,
+        "maxMemMiB": 51.07,
+        "samples": 35
+      },
+      {
+        "name": "fault-tolerance-transcript-1-1",
+        "maxCpuPct": 17.23,
+        "maxMemMiB": 56.05,
+        "samples": 35
+      }
+    ]
+  },
+  "consistency": {
+    "paymentRequestsSent": 2906,
+    "paymentRequestsAccepted": 1726,
+    "paymentRequestsRateLimited": 0,
+    "distinctPaymentIntents": 2446,
+    "acknowledgedIntents": 1476,
+    "deduplicatedResponses": 250,
+    "ackedNotCompleted": 0,
+    "ackedNotCompletedByState": {},
+    "ackedNotCompletedIntents": 0,
+    "duplicateCharges": 0,
+    "duplicateChargesClient": 0,
+    "duplicateChargesDb": 0,
+    "unacknowledgedIntents": 970,
+    "integrityBasis": "idempotency-key",
+    "lostRecords": 0,
+    "lostIntents": [],
+    "phantomRecords": 0,
+    "dbRows": 1476,
+    "ledgerMeasured": true,
+    "completedInDb": 1476,
+    "dbVsIntents": -970,
+    "orphanedPending": 0,
+    "rolledBack": 0,
+    "failedPay": 0,
+    "totalCharged": 147600,
+    "ledgerBalanced": true
+  },
+  "verify": null,
+  "acceptance": [
+    {
+      "id": "HighErrorRate-detect-le-15000ms",
+      "describe": "HighErrorRate fires within 15 s of the injection",
+      "pass": true
+    },
+    {
+      "id": "HighErrorRate-resolve-le-30000ms-after-repair",
+      "describe": "HighErrorRate resolves within 30 s of the repair",
+      "pass": true
+    },
+    {
+      "id": "alerts-correct",
+      "describe": "every mustFire alert fired and no unexpected alert fired",
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+$ npm run demo -- gateway-failure
+deployed mode: endterm   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+== Gateway failure: gateway-1 is killed under live traffic ==
+  expected in endterm: nginx fails over to gateway-2: the per-second histogram stays 2xx
+  t+ 0s  200 x94  201 x45             avg    8 ms  p95   17 ms
+  t+ 1s  200 x89  201 x46             avg   10 ms  p95   19 ms
+  t+ 2s  200 x100  201 x50            avg    7 ms  p95   11 ms
+  t+ 3s  >> kill gateway-1 (docker compose kill)
+  t+ 3s  200 x81  201 x37             avg   14 ms  p95   31 ms
+  t+ 4s  200 x93  201 x47             avg    8 ms  p95   14 ms
+  t+ 5s  200 x90  201 x46             avg    9 ms  p95   20 ms
+  t+ 6s  200 x97  201 x48             avg    8 ms  p95   14 ms
+  t+ 7s  200 x88  201 x44             avg   10 ms  p95   24 ms
+  t+ 8s  200 x93  201 x46             avg    9 ms  p95   15 ms
+  t+ 9s  200 x92  201 x46             avg    9 ms  p95   17 ms
+  t+10s  200 x97  201 x48             avg    8 ms  p95   13 ms
+  t+11s  >> start gateway-1
+  t+11s  200 x84  201 x43             avg   11 ms  p95   21 ms
+  t+12s  200 x87  201 x42             avg   11 ms  p95   23 ms
+  t+13s  200 x87  201 x44             avg   10 ms  p95   20 ms
+  t+14s  200 x94  201 x48             avg    9 ms  p95   18 ms
+  t+15s  200 x99  201 x48             avg    7 ms  p95   12 ms
+  while gateway-1 was down: 200 x731  201 x362
+  instances now: gateway-1 up, gateway-2 up, auth-1 up, student-1 up, student-2 up, payment-1 up, payment-2 up, transcript-1 up
+  Grafana (this step): http://localhost:3000/d/university?from=1794256971802&to=1794257017886
+(exit 0)
