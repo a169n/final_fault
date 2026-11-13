@@ -2,7 +2,7 @@
 
 The assignment asks for a live or recorded demonstration of at least four scenarios. `npm run demo`
 runs six, in about four minutes, against whichever configuration is deployed, and prints what to
-expect before each one. A captured transcript of the final configuration is in [`demo/`](demo/); the baseline transcript was not recorded before the deadline.
+expect before each one. Captured transcripts of both configurations are in [`demo/`](demo/): `demo-final.txt` and `demo-baseline.txt`.
 
 ## Preparation (two minutes before)
 
