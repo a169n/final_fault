@@ -1,0 +1,381 @@
+{
+  "scenario": "data-loss",
+  "title": "Data loss (payment records destroyed) and restore from backup",
+  "kind": "fault",
+  "mode": "final",
+  "rep": 2,
+  "runId": "data-loss-final-r2-1794568407730",
+  "t0": 1794568407734,
+  "t1": 1794568498245,
+  "injectTs": 1794568447734,
+  "repairTs": 1794568462735,
+  "restore": {
+    "ok": true,
+    "durationMs": 15961,
+    "healthy": true,
+    "replicationStreaming": true,
+    "chaosReset": {
+      "3011": true,
+      "3012": true,
+      "3021": true,
+      "3022": true,
+      "3031": true,
+      "3041": true,
+      "3042": true
+    },
+    "dbReset": true,
+    "alertsClear": true,
+    "firingAtStart": []
+  },
+  "abandonedAtClose": 0,
+  "expectedAlerts": {
+    "mustFire": [
+      "PaymentRecordsLost"
+    ],
+    "mayFire": []
+  },
+  "alertCorrectness": {
+    "correct": true,
+    "missing": [],
+    "unexpected": []
+  },
+  "metrics": {
+    "observationMs": 90511,
+    "requests": {
+      "total": 13326,
+      "successful": 13326,
+      "failed": 0,
+      "degraded": 0,
+      "clientTimeouts": 0,
+      "rateLimited": 0,
+      "errorRate": 0
+    },
+    "throughput": {
+      "preFaultRps": 150.05,
+      "duringFaultRps": 145.9902673155123,
+      "postRepairRps": 144.5789918332864
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 1,
+      "readRequestBased": 1,
+      "writeRequestBased": 1,
+      "upBins": 90,
+      "downBins": 0,
+      "idleBins": 1,
+      "badSeconds": 0,
+      "measuredSeconds": 90
+    },
+    "writePath": {
+      "requests": 3031,
+      "failed": 0,
+      "outages": [],
+      "downtimeMs": 0,
+      "recoveryMs": null,
+      "wentDown": false
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": null,
+      "recoveryMs": null,
+      "absorptionMs": null,
+      "faultMasked": false,
+      "detectionSource": "none",
+      "avgMs": 19.021837010355696,
+      "p50Ms": 14,
+      "p95Ms": 49,
+      "p99Ms": 91,
+      "maxMs": 286
+    },
+    "mechanisms": {
+      "failedCallAttempts": 0,
+      "retriesThatSucceeded": 0,
+      "breakerOpened": 0,
+      "degradedResponses": 0,
+      "replicaReads": 0,
+      "duplicatesSuppressed": 515,
+      "checkpointsRolledBack": 0,
+      "dbPromotions": 0,
+      "dbWriterSwitches": 0,
+      "dbFenced": 0,
+      "dbSyncOff": 0,
+      "healthTransitions": []
+    },
+    "alerts": [
+      {
+        "name": "PaymentRecordsLost",
+        "fired": true,
+        "detectionMs": 6013,
+        "resolvedAfterRepairMs": 1015,
+        "firstPendingTs": 1794568452848,
+        "firstFiringTs": 1794568453747,
+        "resolvedTs": 1794568463750
+      }
+    ],
+    "resources": [
+      {
+        "name": "final_fault-auth-1-1",
+        "maxCpuPct": 15.14,
+        "maxMemMiB": 67.38,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-db-backup-1",
+        "maxCpuPct": 22.59,
+        "maxMemMiB": 2.992,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-db-controller-1",
+        "maxCpuPct": 15.58,
+        "maxMemMiB": 47.24,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-gateway-1-1",
+        "maxCpuPct": 50.18,
+        "maxMemMiB": 62.25,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-gateway-2-1",
+        "maxCpuPct": 48.97,
+        "maxMemMiB": 113.3,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-grafana-1",
+        "maxCpuPct": 4.29,
+        "maxMemMiB": 46.49,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-nginx-1",
+        "maxCpuPct": 3.7,
+        "maxMemMiB": 10.83,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-payment-1-1",
+        "maxCpuPct": 21.61,
+        "maxMemMiB": 54.95,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-payment-2-1",
+        "maxCpuPct": 22.96,
+        "maxMemMiB": 54.62,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-postgres-exporter-1",
+        "maxCpuPct": 2.5,
+        "maxMemMiB": 13.27,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-postgres-exporter-replica-1",
+        "maxCpuPct": 2.76,
+        "maxMemMiB": 12.1,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-postgres-primary-1",
+        "maxCpuPct": 13.78,
+        "maxMemMiB": 95.97,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-postgres-replica-1",
+        "maxCpuPct": 58.32,
+        "maxMemMiB": 137.3,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-prometheus-1",
+        "maxCpuPct": 3.5,
+        "maxMemMiB": 58.89,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-student-1-1",
+        "maxCpuPct": 24.07,
+        "maxMemMiB": 56.22,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-student-2-1",
+        "maxCpuPct": 24.9,
+        "maxMemMiB": 53.51,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-timetable-1-1",
+        "maxCpuPct": 14.52,
+        "maxMemMiB": 51.63,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-timetable-2-1",
+        "maxCpuPct": 14.92,
+        "maxMemMiB": 53.3,
+        "samples": 44
+      },
+      {
+        "name": "final_fault-transcript-1-1",
+        "maxCpuPct": 22.91,
+        "maxMemMiB": 64.92,
+        "samples": 44
+      }
+    ]
+  },
+  "consistency": {
+    "paymentRequestsSent": 3031,
+    "paymentRequestsAccepted": 3031,
+    "paymentRequestsRateLimited": 0,
+    "distinctPaymentIntents": 2516,
+    "acknowledgedIntents": 2516,
+    "deduplicatedResponses": 515,
+    "ackedNotCompleted": 0,
+    "ackedNotCompletedByState": {},
+    "ackedNotCompletedIntents": 0,
+    "duplicateCharges": 0,
+    "duplicateChargesClient": 0,
+    "duplicateChargesDb": 0,
+    "unacknowledgedIntents": 0,
+    "integrityBasis": "idempotency-key",
+    "lostRecords": 396,
+    "lostIntents": [
+      "data-loss-final-r2-1794568407730-1000",
+      "data-loss-final-r2-1794568407730-1001",
+      "data-loss-final-r2-1794568407730-1002",
+      "data-loss-final-r2-1794568407730-1003",
+      "data-loss-final-r2-1794568407730-1004",
+      "data-loss-final-r2-1794568407730-1005",
+      "data-loss-final-r2-1794568407730-1006",
+      "data-loss-final-r2-1794568407730-1007",
+      "data-loss-final-r2-1794568407730-1008",
+      "data-loss-final-r2-1794568407730-1009",
+      "data-loss-final-r2-1794568407730-1010",
+      "data-loss-final-r2-1794568407730-1011",
+      "data-loss-final-r2-1794568407730-1012",
+      "data-loss-final-r2-1794568407730-1013",
+      "data-loss-final-r2-1794568407730-1014",
+      "data-loss-final-r2-1794568407730-1015",
+      "data-loss-final-r2-1794568407730-1016",
+      "data-loss-final-r2-1794568407730-1017",
+      "data-loss-final-r2-1794568407730-1018",
+      "data-loss-final-r2-1794568407730-1019",
+      "data-loss-final-r2-1794568407730-1020",
+      "data-loss-final-r2-1794568407730-1021",
+      "data-loss-final-r2-1794568407730-1022",
+      "data-loss-final-r2-1794568407730-1023",
+      "data-loss-final-r2-1794568407730-1024",
+      "data-loss-final-r2-1794568407730-1025",
+      "data-loss-final-r2-1794568407730-1026",
+      "data-loss-final-r2-1794568407730-1027",
+      "data-loss-final-r2-1794568407730-1028",
+      "data-loss-final-r2-1794568407730-1029",
+      "data-loss-final-r2-1794568407730-1030",
+      "data-loss-final-r2-1794568407730-1031",
+      "data-loss-final-r2-1794568407730-1032",
+      "data-loss-final-r2-1794568407730-1033",
+      "data-loss-final-r2-1794568407730-1034",
+      "data-loss-final-r2-1794568407730-1035",
+      "data-loss-final-r2-1794568407730-1036",
+      "data-loss-final-r2-1794568407730-1037",
+      "data-loss-final-r2-1794568407730-1038",
+      "data-loss-final-r2-1794568407730-1039",
+      "data-loss-final-r2-1794568407730-1040",
+      "data-loss-final-r2-1794568407730-1041",
+      "data-loss-final-r2-1794568407730-1042",
+      "data-loss-final-r2-1794568407730-1043",
+      "data-loss-final-r2-1794568407730-1044",
+      "data-loss-final-r2-1794568407730-1045",
+      "data-loss-final-r2-1794568407730-1046",
+      "data-loss-final-r2-1794568407730-1047",
+      "data-loss-final-r2-1794568407730-1048",
+      "data-loss-final-r2-1794568407730-1049"
+    ],
+    "phantomRecords": 0,
+    "dbRows": 2120,
+    "ledgerMeasured": true,
+    "completedInDb": 2120,
+    "dbVsIntents": -396,
+    "orphanedPending": 0,
+    "rolledBack": 0,
+    "failedPay": 0,
+    "totalCharged": 212000,
+    "ledgerBalanced": true
+  },
+  "verify": {
+    "restore": {
+      "ok": true,
+      "file": "university-20261113T111353-1794568433883.dump",
+      "backupFinishedMs": 1794568433883,
+      "checksumOk": true,
+      "scratch": {
+        "payments": 750,
+        "completed": 750,
+        "students": 200,
+        "ledgerBalanced": true
+      },
+      "merged": {
+        "paymentsInserted": 750,
+        "studentsInserted": 0
+      },
+      "durationMs": 2517,
+      "writer": "postgres-replica"
+    },
+    "dataLoss": {
+      "wipeTs": 1794568447734,
+      "basis": "idempotency-key",
+      "ackedBeforeLoss": 1133,
+      "lostAfterRestore": 383,
+      "lossWindowMs": 13725,
+      "backupAgeAtLossMs": 13851,
+      "restoreDurationMs": 2517
+    }
+  },
+  "acceptance": [
+    {
+      "id": "PaymentRecordsLost-detect-le-20000ms",
+      "describe": "PaymentRecordsLost fires within 20 s of the injection",
+      "pass": true
+    },
+    {
+      "id": "restore-succeeded",
+      "describe": "the newest backup passed its checksum, restored into a scratch database and was merged back",
+      "pass": true
+    },
+    {
+      "id": "loss-window-le-20000ms",
+      "describe": "acknowledged payments are missing for at most the last 20 s before the data loss (recovery point)",
+      "pass": true
+    },
+    {
+      "id": "ledger-balanced",
+      "describe": "sum of completed payments equals the sum of student balances",
+      "pass": true
+    },
+    {
+      "id": "db-duplicates-eq-0",
+      "describe": "no key is charged twice in the database after the restore",
+      "pass": true
+    },
+    {
+      "id": "availability-ge-99.9pct",
+      "describe": "request-based availability >= 99.9 %",
+      "pass": true
+    }
+  ]
+}
