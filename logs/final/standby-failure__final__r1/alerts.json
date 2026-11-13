@@ -1,0 +1,19 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 71,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "DatabaseDown",
+      "firstPendingTs": 1794570956848,
+      "firstFiringTs": 1794570961177,
+      "resolvedTs": 1794570983182
+    },
+    {
+      "name": "DatabaseRedundancyLost",
+      "firstPendingTs": 1794570956848,
+      "firstFiringTs": 1794570967179,
+      "resolvedTs": 1794570981180
+    }
+  ]
+}

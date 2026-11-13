@@ -1,0 +1,105 @@
+..........FF.........F                                                   [100%]
+=================================== FAILURES ===================================
+________________________ test_app_role_cannot_truncate _________________________
+
+db = <psycopg.Connection [IDLE] (host=127.0.0.1 port=55432 user=app_rw database=university) at 0x7f83a4fb6510>
+
+    def test_app_role_cannot_truncate(db: psycopg.Connection) -> None:
+        for statement in ("TRUNCATE payments", "DELETE FROM payments", "DROP TABLE payments",
+                          "ALTER TABLE students ADD COLUMN pwned INT"):
+            with pytest.raises(psycopg.errors.InsufficientPrivilege):
+>               db.execute(statement)
+
+tests/integration/test_stack.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <psycopg.Connection [IDLE] (host=127.0.0.1 port=55432 user=app_rw database=university) at 0x7f83a4fb6510>
+query = 'TRUNCATE payments', params = None
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool = False,
+    ) -> Cursor[Row]:
+        """Execute a query and return a cursor to read its results."""
+        try:
+            cur = self.cursor()
+            if binary:
+                cur.format = BINARY
+    
+            return cur.execute(query, params, prepare=prepare)
+        except e._NO_TRACEBACK as ex:
+>           raise ex.with_traceback(None)
+E           psycopg.errors.ReadOnlySqlTransaction: cannot execute TRUNCATE TABLE in a read-only transaction
+
+/tmp/claude-0/-home-user-fault-tolerance-endterm/95557eea-c046-59f5-bebe-746e365734bf/scratchpad/venv/lib/python3.13/site-packages/psycopg/connection.py:251: ReadOnlySqlTransaction
+______________________ test_app_role_cannot_change_users _______________________
+
+db = <psycopg.Connection [IDLE] (host=127.0.0.1 port=55432 user=app_rw database=university) at 0x7f83a4fb6510>
+
+    def test_app_role_cannot_change_users(db: psycopg.Connection) -> None:
+        """No service may promote a user or reset a password hash (90-grants.sql: no UPDATE on app_users)."""
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+>           db.execute("UPDATE app_users SET role = 'admin' WHERE username = 's7'")
+
+tests/integration/test_stack.py:237: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <psycopg.Connection [IDLE] (host=127.0.0.1 port=55432 user=app_rw database=university) at 0x7f83a4fb6510>
+query = "UPDATE app_users SET role = 'admin' WHERE username = 's7'"
+params = None
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool = False,
+    ) -> Cursor[Row]:
+        """Execute a query and return a cursor to read its results."""
+        try:
+            cur = self.cursor()
+            if binary:
+                cur.format = BINARY
+    
+            return cur.execute(query, params, prepare=prepare)
+        except e._NO_TRACEBACK as ex:
+>           raise ex.with_traceback(None)
+E           psycopg.errors.ReadOnlySqlTransaction: cannot execute UPDATE in a read-only transaction
+
+/tmp/claude-0/-home-user-fault-tolerance-endterm/95557eea-c046-59f5-bebe-746e365734bf/scratchpad/venv/lib/python3.13/site-packages/psycopg/connection.py:251: ReadOnlySqlTransaction
+_ test_primary_failure_promotes_the_standby_and_loses_no_acknowledged_payment __
+
+token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJidXJzYXIiLCJyb2xlIjoic3RhZmYiLCJzdHVkZW50X2lkIjpudWxsLCJpc3MiOiJmdHUtYXV0aCIsImF1ZCI6ImZ0dS1hcGkiLCJpYXQiOjE3OTQ1NzEzODcsImV4cCI6MTc5NDU3MjI4N30.WgHdi14RR9Vl79fyOrrLgGi98uABnEVjvLG1ZPkBQQ4'
+
+    def test_primary_failure_promotes_the_standby_and_loses_no_acknowledged_payment(token):
+        before = _controller()
+        old_writer = before["writer"]
+        acked = [key for key in (f"it-fo-{uuid.uuid4()}" for _ in range(20)) if _pay(token, key).status_code == 201]
+        assert len(acked) == 20
+    
+        _compose("stop", old_writer)
+        stopped_at = time.time()
+        try:
+            # payments come back without anyone starting the node again
+            _wait(lambda: _pay(token).status_code == 201, 20, "a payment to succeed after the failover")
+            recovery_s = time.time() - stopped_at
+            after = _controller()
+            assert after["writer"] not in (None, old_writer)
+            assert after["nodes"][after["writer"]]["timeline"] > before["nodes"][old_writer]["timeline"]
+            assert recovery_s < 20
+    
+            # every payment acknowledged before the failure is on the new primary: same key -> stored result, no new charge
+            for key in acked:
+                res = _pay(token, key)
+>               assert res.status_code == 200 and res.json()["state"] == "completed", (key, res.status_code, res.text)
+E               AssertionError: ('it-fo-359b4b7b-d177-4aa8-b83f-1825bec99c91', 503, '{"error":"circuit open for payments"}')
+E               assert (503 == 200)
+E                +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+tests/integration/test_stack_failover.py:163: AssertionError
+3 failed, 19 passed in 22.52s

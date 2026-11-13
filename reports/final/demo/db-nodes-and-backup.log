@@ -1,0 +1,60 @@
+db-backup-1         | backup.sh: university-20261113T115012-1794570612864.dump from postgres-primary, 264380 bytes, 243 ms
+db-backup-1         | backup.sh: university-20261113T115028-1794570628180.dump from postgres-primary, 273006 bytes, 190 ms
+db-backup-1         | backup.sh: university-20261113T115043-1794570643452.dump from postgres-primary, 281617 bytes, 192 ms
+postgres-primary-1  | node.sh: stale primary (timeline 5, peer postgres-replica is primary on timeline 6): rejoining as standby
+postgres-primary-1  | node.sh: cloned postgres-replica, starting as standby
+db-backup-1         | backup.sh: university-20261113T115058-1794570658742.dump from postgres-primary, 290468 bytes, 269 ms
+db-backup-1         | backup.sh: university-20261113T115114-1794570674144.dump from postgres-primary, 300492 bytes, 282 ms
+db-backup-1         | backup.sh: university-20261113T115129-1794570689544.dump from postgres-primary, 309942 bytes, 214 ms
+db-backup-1         | backup.sh: university-20261113T115144-1794570704853.dump from postgres-primary, 318567 bytes, 222 ms
+db-backup-1         | backup.sh: university-20261113T115200-1794570720153.dump from postgres-primary, 328031 bytes, 233 ms
+db-backup-1         | backup.sh: university-20261113T115215-1794570735438.dump from postgres-primary, 337404 bytes, 325 ms
+db-backup-1         | backup.sh: university-20261113T115230-1794570750879.dump from postgres-primary, 345915 bytes, 264 ms
+db-backup-1         | backup.sh: university-20261113T115246-1794570766224.dump from postgres-primary, 353081 bytes, 225 ms
+db-backup-1         | backup.sh: university-20261113T115301-1794570781510.dump from postgres-primary, 353081 bytes, 218 ms
+db-backup-1         | backup.sh: university-20261113T115316-1794570796798.dump from postgres-primary, 353081 bytes, 237 ms
+db-backup-1         | backup.sh: university-20261113T115332-1794570812102.dump from postgres-primary, 353081 bytes, 235 ms
+db-backup-1         | backup.sh: university-20261113T115347-1794570827389.dump from postgres-primary, 353081 bytes, 214 ms
+db-backup-1         | backup.sh: university-20261113T115402-1794570842660.dump from postgres-primary, 16929 bytes, 167 ms
+db-backup-1         | backup.sh: university-20261113T115417-1794570857966.dump from postgres-primary, 24474 bytes, 314 ms
+db-backup-1         | backup.sh: university-20261113T115433-1794570873351.dump from postgres-primary, 38126 bytes, 174 ms
+db-backup-1         | backup.sh: university-20261113T115448-1794570888609.dump from postgres-primary, 53832 bytes, 179 ms
+db-backup-1         | backup.sh: university-20261113T115503-1794570903888.dump from postgres-primary, 69609 bytes, 167 ms
+db-backup-1         | backup.sh: university-20261113T115519-1794570919120.dump from postgres-primary, 16927 bytes, 158 ms
+db-backup-1         | backup.sh: university-20261113T115534-1794570934427.dump from postgres-primary, 17073 bytes, 218 ms
+db-backup-1         | backup.sh: university-20261113T115549-1794570949710.dump from postgres-primary, 25486 bytes, 179 ms
+db-backup-1         | backup.sh: university-20261113T115604-1794570964946.dump from postgres-primary, 33690 bytes, 184 ms
+db-backup-1         | backup.sh: university-20261113T115620-1794570980250.dump from postgres-primary, 42546 bytes, 213 ms
+db-backup-1         | backup.sh: university-20261113T115635-1794570995580.dump from postgres-primary, 51595 bytes, 414 ms
+db-backup-1         | backup.sh: university-20261113T115651-1794571011053.dump from postgres-primary, 16933 bytes, 134 ms
+db-backup-1         | backup.sh: university-20261113T115706-1794571026248.dump from postgres-primary, 18387 bytes, 386 ms
+db-backup-1         | backup.sh: university-20261113T115721-1794571041800.dump from postgres-primary, 27991 bytes, 182 ms
+db-backup-1         | backup.sh: university-20261113T115737-1794571057070.dump from postgres-primary, 36995 bytes, 203 ms
+db-backup-1         | backup.sh: university-20261113T115752-1794571072362.dump from postgres-primary, 46431 bytes, 151 ms
+db-backup-1         | backup.sh: university-20261113T115807-1794571087639.dump from postgres-primary, 55729 bytes, 213 ms
+db-backup-1         | backup.sh: university-20261113T115822-1794571102913.dump from postgres-primary, 16931 bytes, 178 ms
+db-backup-1         | backup.sh: university-20261113T115838-1794571118185.dump from postgres-primary, 19825 bytes, 220 ms
+db-backup-1         | backup.sh: university-20261113T115853-1794571133514.dump from postgres-primary, 28898 bytes, 361 ms
+db-backup-1         | backup.sh: university-20261113T115909-1794571148998.dump from postgres-primary, 37659 bytes, 162 ms
+db-backup-1         | backup.sh: university-20261113T115924-1794571164217.dump from postgres-primary, 47044 bytes, 249 ms
+db-backup-1         | backup.sh: university-20261113T115939-1794571179617.dump from postgres-primary, 55798 bytes, 333 ms
+db-backup-1         | backup.sh: university-20261113T115955-1794571195018.dump from postgres-primary, 57536 bytes, 203 ms
+db-backup-1         | backup.sh: university-20261113T120010-1794571210308.dump from postgres-primary, 69258 bytes, 291 ms
+db-backup-1         | backup.sh: university-20261113T120025-1794571225733.dump from postgres-replica, 91191 bytes, 207 ms
+db-backup-1         | backup.sh: university-20261113T120041-1794571241100.dump from postgres-replica, 124869 bytes, 269 ms
+db-backup-1         | backup.sh: university-20261113T120056-1794571256505.dump from postgres-replica, 136148 bytes, 191 ms
+db-backup-1         | backup.sh: university-20261113T120111-1794571271839.dump from postgres-replica, 16928 bytes, 186 ms
+db-backup-1         | backup.sh: university-20261113T120127-1794571287132.dump from postgres-replica, 147426 bytes, 216 ms
+db-backup-1         | backup.sh: university-20261113T120142-1794571302473.dump from postgres-replica, 157910 bytes, 215 ms
+db-backup-1         | backup.sh: university-20261113T120157-1794571317813.dump from postgres-replica, 157910 bytes, 170 ms
+db-backup-1         | backup.sh: university-20261113T120213-1794571333089.dump from postgres-replica, 157910 bytes, 180 ms
+db-backup-1         | backup.sh: university-20261113T120228-1794571348373.dump from postgres-replica, 157910 bytes, 206 ms
+db-backup-1         | backup.sh: university-20261113T120243-1794571363681.dump from postgres-replica, 157910 bytes, 166 ms
+db-backup-1         | backup.sh: university-20261113T120258-1794571378958.dump from postgres-replica, 158005 bytes, 165 ms
+db-backup-1         | backup.sh: university-20261113T120314-1794571394190.dump from postgres-primary, 158850 bytes, 196 ms
+postgres-primary-1  | node.sh: stale primary (timeline 7, peer postgres-replica is primary on timeline 8): rejoining as standby
+postgres-primary-1  | node.sh: cloned postgres-replica, starting as standby
+postgres-primary-1  | node.sh: stale primary (timeline 9, peer postgres-replica is primary on timeline 10): rejoining as standby
+postgres-primary-1  | node.sh: cloned postgres-replica, starting as standby
+postgres-primary-1  | backend> node.sh: stale primary (timeline 11, peer postgres-replica is primary on timeline 12): rejoining as standby
+postgres-primary-1  | node.sh: cloned postgres-replica, starting as standby

@@ -1,0 +1,341 @@
+{
+  "scenario": "standby-failure",
+  "title": "Standby failure (the database standby is stopped)",
+  "kind": "fault",
+  "mode": "final",
+  "rep": 3,
+  "runId": "standby-failure-final-r3-1794571113365",
+  "t0": 1794571113370,
+  "t1": 1794571183882,
+  "injectTs": 1794571133370,
+  "repairTs": 1794571158370,
+  "restore": {
+    "ok": true,
+    "durationMs": 15896,
+    "healthy": true,
+    "replicationStreaming": true,
+    "chaosReset": {
+      "3011": true,
+      "3012": true,
+      "3021": true,
+      "3022": true,
+      "3031": true,
+      "3041": true,
+      "3042": true
+    },
+    "dbReset": true,
+    "alertsClear": true,
+    "firingAtStart": []
+  },
+  "abandonedAtClose": 3,
+  "expectedAlerts": {
+    "mustFire": [
+      "DatabaseDown"
+    ],
+    "mayFire": [
+      "DatabaseRedundancyLost",
+      "HighErrorRate",
+      "HighLatencyP95"
+    ]
+  },
+  "alertCorrectness": {
+    "correct": true,
+    "missing": [],
+    "unexpected": []
+  },
+  "metrics": {
+    "observationMs": 70512,
+    "requests": {
+      "total": 10383,
+      "successful": 10383,
+      "failed": 0,
+      "degraded": 0,
+      "clientTimeouts": 0,
+      "rateLimited": 0,
+      "errorRate": 0
+    },
+    "throughput": {
+      "preFaultRps": 149.9,
+      "duringFaultRps": 148,
+      "postRepairRps": 144.44183129507684
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 1,
+      "readRequestBased": 1,
+      "writeRequestBased": 1,
+      "upBins": 70,
+      "downBins": 0,
+      "idleBins": 1,
+      "badSeconds": 0,
+      "measuredSeconds": 70
+    },
+    "writePath": {
+      "requests": 2386,
+      "failed": 0,
+      "outages": [],
+      "downtimeMs": 0,
+      "recoveryMs": null,
+      "wentDown": false
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": 1028,
+      "recoveryMs": null,
+      "absorptionMs": 1906,
+      "faultMasked": true,
+      "detectionSource": "failed call attempt",
+      "avgMs": 18.97524800154098,
+      "p50Ms": 12,
+      "p95Ms": 47,
+      "p99Ms": 81,
+      "maxMs": 1750
+    },
+    "mechanisms": {
+      "failedCallAttempts": 12,
+      "retriesThatSucceeded": 10,
+      "breakerOpened": 1,
+      "degradedResponses": 0,
+      "replicaReads": 0,
+      "duplicatesSuppressed": 410,
+      "checkpointsRolledBack": 0,
+      "dbPromotions": 0,
+      "dbWriterSwitches": 0,
+      "dbFenced": 0,
+      "dbSyncOff": 1,
+      "healthTransitions": [
+        {
+          "ts": 1794571135243,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794571136273,
+          "target": "http://payment-1:3000",
+          "ok": true
+        }
+      ]
+    },
+    "alerts": [
+      {
+        "name": "DatabaseDown",
+        "fired": true,
+        "detectionMs": 6009,
+        "resolvedAfterRepairMs": 3014,
+        "firstPendingTs": 1794571134848,
+        "firstFiringTs": 1794571139379,
+        "resolvedTs": 1794571161384
+      },
+      {
+        "name": "DatabaseRedundancyLost",
+        "fired": true,
+        "detectionMs": 12011,
+        "resolvedAfterRepairMs": 3014,
+        "firstPendingTs": 1794571134848,
+        "firstFiringTs": 1794571145381,
+        "resolvedTs": 1794571161384
+      }
+    ],
+    "resources": [
+      {
+        "name": "final_fault-auth-1-1",
+        "maxCpuPct": 16.78,
+        "maxMemMiB": 69.2,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-db-backup-1",
+        "maxCpuPct": 17.22,
+        "maxMemMiB": 1.863,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-db-controller-1",
+        "maxCpuPct": 15.34,
+        "maxMemMiB": 48.87,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-gateway-1-1",
+        "maxCpuPct": 50.74,
+        "maxMemMiB": 63.28,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-gateway-2-1",
+        "maxCpuPct": 48.38,
+        "maxMemMiB": 121.7,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-grafana-1",
+        "maxCpuPct": 0.91,
+        "maxMemMiB": 65.36,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-nginx-1",
+        "maxCpuPct": 7.1,
+        "maxMemMiB": 12.13,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-payment-1-1",
+        "maxCpuPct": 22.14,
+        "maxMemMiB": 52.84,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-payment-2-1",
+        "maxCpuPct": 23.11,
+        "maxMemMiB": 55.94,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-postgres-exporter-1",
+        "maxCpuPct": 3.47,
+        "maxMemMiB": 14.75,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-postgres-exporter-replica-1",
+        "maxCpuPct": 2.88,
+        "maxMemMiB": 12.88,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-postgres-primary-1",
+        "maxCpuPct": 23.48,
+        "maxMemMiB": 185.5,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-postgres-replica-1",
+        "maxCpuPct": 12.88,
+        "maxMemMiB": 83.82,
+        "samples": 22
+      },
+      {
+        "name": "final_fault-prometheus-1",
+        "maxCpuPct": 3.62,
+        "maxMemMiB": 60.09,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-student-1-1",
+        "maxCpuPct": 25.05,
+        "maxMemMiB": 57.48,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-student-2-1",
+        "maxCpuPct": 24.56,
+        "maxMemMiB": 56.2,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-timetable-1-1",
+        "maxCpuPct": 12.86,
+        "maxMemMiB": 54.98,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-timetable-2-1",
+        "maxCpuPct": 15.22,
+        "maxMemMiB": 54.27,
+        "samples": 34
+      },
+      {
+        "name": "final_fault-transcript-1-1",
+        "maxCpuPct": 20.41,
+        "maxMemMiB": 66.41,
+        "samples": 34
+      }
+    ]
+  },
+  "consistency": {
+    "paymentRequestsSent": 2386,
+    "paymentRequestsAccepted": 2386,
+    "paymentRequestsRateLimited": 0,
+    "distinctPaymentIntents": 1988,
+    "acknowledgedIntents": 1982,
+    "deduplicatedResponses": 408,
+    "ackedNotCompleted": 7,
+    "ackedNotCompletedByState": {
+      "pending": 7
+    },
+    "ackedNotCompletedIntents": 6,
+    "duplicateCharges": 0,
+    "duplicateChargesClient": 0,
+    "duplicateChargesDb": 0,
+    "unacknowledgedIntents": 6,
+    "integrityBasis": "idempotency-key",
+    "lostRecords": 0,
+    "lostIntents": [],
+    "phantomRecords": 6,
+    "dbRows": 1988,
+    "ledgerMeasured": true,
+    "completedInDb": 1988,
+    "dbVsIntents": 0,
+    "orphanedPending": 0,
+    "rolledBack": 0,
+    "failedPay": 0,
+    "totalCharged": 198800,
+    "ledgerBalanced": true
+  },
+  "verify": {
+    "stopped": "postgres-replica",
+    "db": {
+      "writer": "postgres-primary",
+      "standbys": 1,
+      "timeline": 11,
+      "sync": true
+    }
+  },
+  "acceptance": [
+    {
+      "id": "DatabaseDown-detect-le-10000ms",
+      "describe": "DatabaseDown fires within 10 s of the injection",
+      "pass": true
+    },
+    {
+      "id": "availability-ge-99.5pct",
+      "describe": "request-based availability >= 99.5 %",
+      "pass": true
+    },
+    {
+      "id": "write-recovery-le-10000ms",
+      "describe": "payments succeed again within 10 s of the injection (before the operator repairs anything)",
+      "pass": true
+    },
+    {
+      "id": "duplicates-eq-0",
+      "describe": "no duplicate charge (DB and client side)",
+      "pass": true
+    },
+    {
+      "id": "lost-eq-0",
+      "describe": "no acknowledged payment missing from the DB",
+      "pass": true
+    },
+    {
+      "id": "ledger-balanced",
+      "describe": "sum of completed payments equals the sum of student balances",
+      "pass": true
+    },
+    {
+      "id": "standby-streaming-at-end",
+      "describe": "at the end of the run a primary accepts writes and a standby streams from it (redundancy restored)",
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+deployed mode: [1mfinal[0m   Grafana http://localhost:3000/d/university   Prometheus http://localhost:9090/alerts
+
+[1m== Application crash: student-1 kills its own process ==[0m
+  expected in final: as endterm: 2xx throughout; student-1 restarts on its own
+  before   students: 200 x20
+  >> student-1 crashed (POST /chaos/crash)
+  during   students: 200 x40
+           gateway view: {"http://payment-1:3000":true,"http://student-1:3000":false,"http://timetable-2:3000":true,"http://student-2:3000":true,"http://auth-1:3000":true,"http://timetable-1:3000":true,"http://transcript-1:3000":true,"http://payment-2:3000":true}
+  after 8s students: 200 x20
+  Grafana (this step): http://localhost:3000/d/university?from=1794571180157&to=1794571220404
+
+[1m== Database failover: the primary is stopped under live payments ==[0m
+  expected in final: payments fail for about 5 s, then the controller promotes the standby and they succeed again with the primary still down; the old primary rejoins as a standby when it is started
+  before   writer=postgres-primary postgres-primary:primary postgres-replica:standby
+  t+ 0s  200 x56  201 x56             avg   16 ms  p95   27 ms   writer=postgres-primary postgres-primary:primary postgres-replica:standby
+  t+ 1s  200 x58  201 x59             avg   14 ms  p95   31 ms   writer=postgres-primary postgres-primary:primary postgres-replica:standby
+  t+ 2s  200 x58  201 x56             avg   15 ms  p95   28 ms   writer=postgres-primary postgres-primary:primary postgres-replica:standby
+  t+ 3s  200 x59  201 x60             avg   13 ms  p95   26 ms   writer=postgres-primary postgres-primary:primary postgres-replica:standby
+  t+ 4s  200 x58  201 x57             avg   14 ms  p95   28 ms   writer=postgres-primary postgres-primary:primary postgres-replica:standby
+  t+ 5s  >> docker compose stop postgres-primary  (the node that accepts writes)
+  t+ 5s  200 x16  201 x12  503 x5     avg   62 ms  p95  289 ms   writer=postgres-primary postgres-primary:primary postgres-replica:standby
+  t+ 6s  200 x10  503 x12             avg  199 ms  p95  551 ms   writer=NONE postgres-primary:down postgres-replica:standby
+  t+ 7s  200 x8  503 x6               avg  294 ms  p95  513 ms   writer=NONE postgres-primary:down postgres-replica:standby
+  t+ 8s  200 x5  503 x6               avg  235 ms  p95  515 ms   writer=NONE postgres-primary:down postgres-replica:standby
+  t+ 9s  200 x67  503 x68             avg   19 ms  p95   24 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+10s  200 x70  503 x69             avg    9 ms  p95   15 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+11s  200 x61  201 x43  503 x17    avg   13 ms  p95   23 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+12s  200 x59  201 x57             avg   15 ms  p95   29 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+13s  200 x61  201 x64             avg   12 ms  p95   22 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+14s  200 x61  201 x60             avg   13 ms  p95   27 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+15s  200 x60  201 x62             avg   13 ms  p95   24 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+16s  200 x57  201 x53             avg   16 ms  p95   30 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+17s  200 x64  201 x64             avg   11 ms  p95   19 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+18s  200 x59  201 x63             avg   13 ms  p95   24 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+19s  200 x64  201 x61             avg   11 ms  p95   22 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+20s  200 x57  201 x60             avg   14 ms  p95   25 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+21s  200 x60  201 x58             avg   13 ms  p95   20 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+22s  200 x61  201 x61             avg   13 ms  p95   26 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+23s  200 x60  201 x61             avg   13 ms  p95   23 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+24s  200 x61  201 x59             avg   13 ms  p95   27 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+25s  >> docker compose start postgres-primary  (operator repair)
+  t+25s  200 x52  201 x52             avg   18 ms  p95   40 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+26s  200 x60  201 x59             avg   13 ms  p95   26 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+27s  200 x55  201 x58             avg   15 ms  p95   33 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+28s  200 x61  201 x61             avg   12 ms  p95   23 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+29s  200 x56  201 x56             avg   16 ms  p95   27 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+30s  200 x60  201 x60             avg   13 ms  p95   25 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+31s  200 x57  201 x57             avg   15 ms  p95   33 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+32s  200 x63  201 x62             avg   12 ms  p95   22 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+33s  200 x60  201 x62             avg   12 ms  p95   22 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+34s  200 x51  201 x51             avg   19 ms  p95   41 ms   writer=postgres-replica postgres-primary:down postgres-replica:primary
+  t+35s  200 x54  201 x52             avg   17 ms  p95   35 ms   writer=postgres-replica postgres-primary:standby postgres-replica:primary
+  t+36s  200 x55  201 x55             avg   16 ms  p95   28 ms   writer=postgres-replica postgres-primary:standby postgres-replica:primary
+  t+37s  200 x59  201 x58             avg   14 ms  p95   26 ms   writer=postgres-replica postgres-primary:standby postgres-replica:primary
+  t+38s  200 x55  201 x57             avg   15 ms  p95   28 ms   writer=postgres-replica postgres-primary:standby postgres-replica:primary
+  t+39s  200 x60  201 x61             avg   14 ms  p95   27 ms   writer=postgres-replica postgres-primary:standby postgres-replica:primary
+  after    writer=postgres-replica postgres-primary:standby postgres-replica:primary
+    controller: promote postgres-replica (no writer for 3 probes)
+    controller: sync_on postgres-replica (standby streaming)
+  Grafana (this step): http://localhost:3000/d/university?from=1794571190405&to=1794571260464
+
+[1m== Data loss and restore: payment records destroyed, then restored from backup ==[0m
+  expected in final: PaymentRecordsLost fires; the last backup from before the damage is verified and merged back; only the payments of the last seconds before the damage are missing
+  making 60 payments ...
+  ledger   completed / charged / balances = 4036 / 403600.00 / 403600.00
+  waiting 17 s so that a backup contains them (the interval is 15 s) ...
+  >> TRUNCATE payments; UPDATE students SET balance = 0   (as the superuser: an operator error)
+  ledger   completed / charged / balances = 0 / 0 / 0.00
+  alert    firing   PaymentRecordsLost
+  >> npm run db:restore -- --before 2026-11-13T12:01:03.730Z
+  restore  ok: university-20261113T120056-1794571256505.dump, checksum ok, 4036 completed payments in the backup, 4037 merged back, 1662 ms
+  ledger   completed / charged / balances = 4036 / 403600.00 / 403600.00
+  Grafana (this step): http://localhost:3000/d/university?from=1794571230464&to=1794571293285
+
+[1m== Gateway failure: gateway-1 is killed under live traffic ==[0m
+  expected in final: as endterm: nginx fails over to gateway-2, the histogram stays 2xx
+  t+ 0s  200 x82  201 x40             avg   13 ms  p95   25 ms
+  t+ 1s  200 x81  201 x41             avg   13 ms  p95   28 ms
+  t+ 2s  200 x78  201 x38             avg   14 ms  p95   26 ms
+  t+ 3s  >> kill gateway-1 (docker compose kill)
+  t+ 3s  200 x77  201 x40             avg   14 ms  p95   31 ms
+  t+ 4s  200 x68  201 x34             avg   19 ms  p95   33 ms
+  t+ 5s  200 x82  201 x40             avg   12 ms  p95   20 ms
+  t+ 6s  200 x66  201 x32             avg   20 ms  p95   42 ms
+  t+ 7s  200 x87  201 x44             avg   11 ms  p95   18 ms
+  t+ 8s  200 x68  201 x35             avg   17 ms  p95   36 ms
+  t+ 9s  200 x81  201 x40             avg   14 ms  p95   33 ms
+  t+10s  200 x75  201 x39             avg   15 ms  p95   28 ms
+  t+11s  >> start gateway-1
+  t+11s  200 x69  201 x33             avg   19 ms  p95   41 ms
+  t+12s  200 x76  201 x40             avg   14 ms  p95   28 ms
+  t+13s  200 x80  201 x38             avg   13 ms  p95   24 ms
+  t+14s  200 x81  201 x41             avg   13 ms  p95   28 ms
+  t+15s  200 x83  201 x43             avg   12 ms  p95   22 ms
+  while gateway-1 was down: 200 x604  201 x304
+  instances now: gateway-1 up, gateway-2 up, auth-1 up, student-1 up, student-2 up, payment-1 up, payment-2 up, transcript-1 up
+  Grafana (this step): http://localhost:3000/d/university?from=1794571263285&to=1794571309324
+
+[1m== Unauthorized access: missing, forged, expired and alg:none tokens; s7 pays for s8 ==[0m
+  expected in final: as endterm: 401 / 403, one audit deny line per rid, DB unchanged
+  each attack is POST /api/payments {studentId: "s8", amount: 13.37}
+  no token                         -> 401   rid=attack-demo-1794571294385-0
+  forged signature (admin claims)  -> 401   rid=attack-demo-1794571294385-1
+  expired token (admin claims)     -> 401   rid=attack-demo-1794571294385-2
+  alg:none token (admin claims)    -> 401   rid=attack-demo-1794571294385-3
+  student s7 pays for s8           -> 403   rid=attack-demo-1794571294385-4
+  audit lines for these rids (logs/events.jsonl):
+    gateway-1  rid=attack-demo-1794571294385-0  deny 401 missing_token  POST /api/payments  sub=-
+    gateway-2  rid=attack-demo-1794571294385-1  deny 401 bad_signature  POST /api/payments  sub=-
+    gateway-1  rid=attack-demo-1794571294385-2  deny 401 expired  POST /api/payments  sub=-
+    gateway-2  rid=attack-demo-1794571294385-3  deny 401 malformed  POST /api/payments  sub=-
+    gateway-1  rid=attack-demo-1794571294385-4  deny 403 not_owner  POST /api/payments  sub=s7 (student)
+  attacker payments in the DB (amount 13.37): before 0, after 0
+  [1mPASS: all 5 refused (401 x4  403 x1); DB unchanged[0m
+  follow one request through every hop: grep attack-demo-1794571294385-0 logs/events.jsonl
+  Grafana (this step): http://localhost:3000/d/university?from=1794571279324&to=1794571310915
+
+[1m== Abuse: malformed input, request burst, login brute force ==[0m
+  expected in final: as endterm: 422/400/413, 429 with Retry-After, every instance stays healthy
+  malformed input (23 requests: 20 bad payment bodies, invalid JSON, 1 MiB body, bad path):
+    400 x2  413 x1  422 x20
+  burst: 1000 GETs of /api/students/s7 as s7 in 1280 ms
+    2xx 64   429 936 (Retry-After on 936, e.g. "1")   other 0
+  login brute force: 20 wrong passwords for s7: 401 x10  429 x10   (first 429 at attempt 11)
+  instances after the abuse: gateway-1 up, gateway-2 up, auth-1 up, student-1 up, student-2 up, payment-1 up, payment-2 up, transcript-1 up
+  Grafana (this step): http://localhost:3000/d/university?from=1794571280915&to=1794571314086
