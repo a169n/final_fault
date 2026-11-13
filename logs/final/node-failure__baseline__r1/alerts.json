@@ -1,0 +1,31 @@
+{
+  "promUrl": "http://localhost:9090",
+  "polls": 71,
+  "pollErrors": 0,
+  "observations": [
+    {
+      "name": "HighErrorRate",
+      "firstPendingTs": 1794576572848,
+      "firstFiringTs": 1794576578856,
+      "resolvedTs": 1794576604862
+    },
+    {
+      "name": "HighLatencyP95",
+      "firstPendingTs": 1794576586848,
+      "firstFiringTs": 1794576596859,
+      "resolvedTs": 1794576598859
+    },
+    {
+      "name": "InstanceDown",
+      "firstPendingTs": 1794576570848,
+      "firstFiringTs": 1794576574854,
+      "resolvedTs": 1794576598859
+    },
+    {
+      "name": "PaymentsStuckPending",
+      "firstPendingTs": 1794576590848,
+      "firstFiringTs": 1794576600860,
+      "resolvedTs": null
+    }
+  ]
+}
