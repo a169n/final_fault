@@ -27,6 +27,7 @@ const TABLE: Record<string, { kind: string; mustFire: string[]; mayFire: string[
     mayFire: ['HighErrorRate', 'HighLatencyP95', 'PaymentsStuckPending', 'DatabaseNoWriter', 'DatabaseFailover', 'DatabaseRedundancyLost'],
     criteria: 7,
   },
+  'standby-failure': { kind: 'fault', mustFire: ['DatabaseDown'], mayFire: ['DatabaseRedundancyLost', 'HighErrorRate', 'HighLatencyP95'], criteria: 7 },
 };
 
 // A run that meets every endterm target in the table.
@@ -68,7 +69,7 @@ function goodRun(over: Record<string, any> = {}): RunResult {
   return base as unknown as RunResult;
 }
 
-test('the twelve scenarios of the table exist with their kind, expected alerts and acceptance criteria', () => {
+test('the thirteen scenarios of the table exist with their kind, expected alerts and acceptance criteria', () => {
   assert.deepEqual(Object.keys(SCENARIOS).sort(), Object.keys(TABLE).sort());
   for (const [name, row] of Object.entries(TABLE)) {
     const s = SCENARIOS[name];

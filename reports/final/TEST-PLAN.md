@@ -76,7 +76,7 @@ The assignment's minimum experiment matrix (§6) is covered as follows.
 | Matrix row | Scenario(s) |
 |---|---|
 | 1 Application/service instance failure | E1 `app-crash`, E4 `node-failure`, E7 `gateway-failure` |
-| 2 Database or dependency unavailable | E2 `db-failure` |
+| 2 Database or dependency unavailable | E2 `db-failure`, E13 `standby-failure` |
 | 3 Network delay or timeout | E3 `net-timeout` |
 | 4 Interrupted multi-step transaction | E5 `txn-interrupt` |
 | 5 High load or traffic spike | E6 `high-load` |
@@ -156,6 +156,13 @@ to be far above any real rate so that enough faults fit into one run.
 - **Criteria:** availability ≥ 99.5 %; payment availability ≥ 98 %; at most 30 seconds with < 99 % success; no duplicate charge; no lost record; ledger balanced; a standby streaming at the end.
 - **Used for:** the system-level MTTF, MTBF, MTTR, availability and failure-rate calculations (`reports/final/RELIABILITY.md`).
 
+### E13 `standby-failure` — the database standby is stopped (new)
+Added after the campaign had started, when the failure analysis (REPORT.md §4.3, row F7) made a
+claim about this case that no scenario measured. Its hypothesis was written before its first run.
+- **Baseline:** nothing depends on the standby: no client-visible effect.
+- **Final:** replication is synchronous, so commits wait for the standby that is gone until the controller switches to asynchronous replication after two probes. Payments stall for about 2 to 4 s; some time out at the gateway. No payment is lost or duplicated. This is the price of losing no acknowledged write in a failover, and **the final configuration is expected to do worse than the baseline here**, possibly missing the 99.5 % criterion.
+- **Criteria:** `DatabaseDown` fires ≤ 10 s; availability ≥ 99.5 %; payment path recovers ≤ 10 s; no duplicate charge; no lost record; ledger balanced; a standby streaming at the end.
+
 ## 5. What is recorded per run
 
 `reports/final/runs/<scenario>__<mode>__r<N>/metrics.json` (computed) and
@@ -180,7 +187,7 @@ every service for the window, the alert observations, and CPU/memory samples.
 | Unit (harness) | metric, reliability, acceptance and aggregation code | `npm run test:harness` |
 | Alert rules | every rule fires on a crossing series and not just under it | `npm run test:alerts` |
 | Integration | the running final stack end to end, including a real failover and a restore | `npm run up:final && npm run test:integration` |
-| System experiments | E1–E12, three repetitions, two configurations | `npm run campaign -- --reps 3` |
+| System experiments | E1–E13, three repetitions, two configurations | `npm run campaign -- --reps 3` |
 
 ## 7. Known limitations of the method (stated before the results)
 

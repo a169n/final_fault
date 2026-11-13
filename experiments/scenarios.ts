@@ -446,6 +446,43 @@ function soak(): Scenario {
   };
 }
 
+// E13: the standby is stopped. Nothing depends on the standby in the baseline, so nothing happens
+// there. In final, replication is synchronous: commits wait for a standby that is gone until the
+// controller switches to asynchronous replication (SYNC_GRACE probes). This scenario measures that
+// price of the "no acknowledged write is lost" guarantee.
+async function dbStandbyNode(): Promise<string> {
+  try {
+    const res = await fetch('http://localhost:3061/health', { signal: AbortSignal.timeout(2000) });
+    const body = (await res.json()) as { nodes?: Record<string, { role?: string }> };
+    const standby = Object.entries(body.nodes ?? {}).find(([, v]) => v.role === 'standby')?.[0];
+    if (standby) return standby;
+  } catch { /* controller unreachable */ }
+  return 'postgres-replica';
+}
+
+function standbyFailure(): Scenario {
+  let stopped = 'postgres-replica';
+  return {
+    name: 'standby-failure',
+    kind: 'fault',
+    title: 'Standby failure (the database standby is stopped)',
+    durationMs: D, injectAtMs: INJECT, repairAtMs: REPAIR,
+    inject: async () => { stopped = await dbStandbyNode(); await dc('stop', stopped); },
+    repair: () => dc('start', stopped),
+    expectedAlerts: { mustFire: ['DatabaseDown'], mayFire: ['DatabaseRedundancyLost', 'HighErrorRate', 'HighLatencyP95'] },
+    acceptance: [
+      criteria.alertDetectedWithin('DatabaseDown', 10_000),
+      criteria.availabilityAtLeast(0.995),
+      criteria.writePathRecoversWithin(10_000),
+      criteria.noDuplicateCharges(),
+      criteria.noLostRecords(),
+      criteria.ledgerBalanced(),
+      criteria.standbyStreamingAtEnd(),
+    ],
+    verify: async () => ({ stopped, db: await dbStateWhenSettled() }),
+  };
+}
+
 export const SCENARIOS: Record<string, Scenario> = {
   'app-crash': {
     name: 'app-crash',
@@ -554,6 +591,7 @@ export const SCENARIOS: Record<string, Scenario> = {
   'abuse': abuse(),
   'data-loss': dataLoss(),
   'soak': soak(),
+  'standby-failure': standbyFailure(),
 };
 
 if (process.argv[1]?.endsWith('scenarios.ts')) {
