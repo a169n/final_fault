@@ -1,0 +1,865 @@
+{
+  "scenario": "soak",
+  "title": "Reliability soak (9 component faults in 10 minutes)",
+  "kind": "fault",
+  "mode": "final",
+  "rep": 3,
+  "runId": "soak-final-r3-1794570163992",
+  "t0": 1794570163998,
+  "t1": 1794570764528,
+  "injectTs": 1794570193998,
+  "repairTs": 1794570723998,
+  "restore": {
+    "ok": true,
+    "durationMs": 16039,
+    "healthy": true,
+    "replicationStreaming": true,
+    "chaosReset": {
+      "3011": true,
+      "3012": true,
+      "3021": true,
+      "3022": true,
+      "3031": true,
+      "3041": true,
+      "3042": true
+    },
+    "dbReset": true,
+    "alertsClear": true,
+    "firingAtStart": []
+  },
+  "abandonedAtClose": 2,
+  "expectedAlerts": {
+    "mustFire": [
+      "InstanceDown",
+      "DatabaseDown"
+    ],
+    "mayFire": [
+      "HighErrorRate",
+      "HighLatencyP95",
+      "PaymentsStuckPending",
+      "DatabaseNoWriter",
+      "DatabaseFailover",
+      "DatabaseRedundancyLost"
+    ]
+  },
+  "alertCorrectness": {
+    "correct": true,
+    "missing": [],
+    "unexpected": []
+  },
+  "metrics": {
+    "observationMs": 600530,
+    "requests": {
+      "total": 89690,
+      "successful": 89493,
+      "failed": 197,
+      "degraded": 0,
+      "clientTimeouts": 0,
+      "rateLimited": 0,
+      "errorRate": 0.0021964544542312408
+    },
+    "throughput": {
+      "preFaultRps": 150.7,
+      "duringFaultRps": 148.76037735849056,
+      "postRepairRps": 151.22131754256105
+    },
+    "availability": {
+      "timeBased": 1,
+      "requestBased": 0.9978035455457688,
+      "readRequestBased": 1,
+      "writeRequestBased": 0.9904466320740992,
+      "upBins": 600,
+      "downBins": 0,
+      "idleBins": 1,
+      "badSeconds": 14,
+      "measuredSeconds": 600
+    },
+    "writePath": {
+      "requests": 20621,
+      "failed": 197,
+      "outages": [
+        {
+          "startTs": 1794570555089,
+          "endTs": 1794570561212,
+          "durationMs": 6123,
+          "open": false
+        }
+      ],
+      "downtimeMs": 6123,
+      "recoveryMs": 367214,
+      "wentDown": true
+    },
+    "reliability": {
+      "observedFailures": 0,
+      "mttfMs": null,
+      "mttfCensored": true,
+      "mtbfMs": null,
+      "mtbfSource": "MTTF + MTTR (fewer than two outages)",
+      "mttrMs": null,
+      "failureRatePerHour": 0,
+      "outages": []
+    },
+    "response": {
+      "detectionMs": 88,
+      "recoveryMs": null,
+      "absorptionMs": 481084,
+      "faultMasked": false,
+      "detectionSource": "failed call attempt",
+      "avgMs": 18.152827595454394,
+      "p50Ms": 12,
+      "p95Ms": 46,
+      "p99Ms": 85,
+      "maxMs": 1101
+    },
+    "mechanisms": {
+      "failedCallAttempts": 95,
+      "retriesThatSucceeded": 67,
+      "breakerOpened": 4,
+      "degradedResponses": 133,
+      "replicaReads": 133,
+      "duplicatesSuppressed": 3414,
+      "checkpointsRolledBack": 1,
+      "dbPromotions": 2,
+      "dbWriterSwitches": 17,
+      "dbFenced": 0,
+      "dbSyncOff": 0,
+      "healthTransitions": [
+        {
+          "ts": 1794570194927,
+          "target": "http://student-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570194949,
+          "target": "http://student-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570196015,
+          "target": "http://student-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570196016,
+          "target": "http://student-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570254306,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570254317,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570281193,
+          "target": "http://payment-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570281300,
+          "target": "http://payment-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570314418,
+          "target": "http://timetable-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314427,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314427,
+          "target": "http://timetable-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314427,
+          "target": "http://payment-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314428,
+          "target": "http://auth-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314430,
+          "target": "http://student-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314481,
+          "target": "http://student-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314482,
+          "target": "http://payment-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314482,
+          "target": "http://timetable-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314488,
+          "target": "http://auth-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314495,
+          "target": "http://timetable-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314708,
+          "target": "http://student-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314773,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570314774,
+          "target": "http://student-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570318362,
+          "target": "http://payment-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318362,
+          "target": "http://student-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318362,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318363,
+          "target": "http://timetable-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318364,
+          "target": "http://student-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318375,
+          "target": "http://auth-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318376,
+          "target": "http://timetable-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318428,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318429,
+          "target": "http://student-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318429,
+          "target": "http://student-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318431,
+          "target": "http://payment-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318431,
+          "target": "http://timetable-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318432,
+          "target": "http://auth-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570318432,
+          "target": "http://timetable-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570400732,
+          "target": "http://payment-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570400736,
+          "target": "http://student-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570400739,
+          "target": "http://timetable-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570400740,
+          "target": "http://student-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570400742,
+          "target": "http://auth-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570400743,
+          "target": "http://timetable-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570400745,
+          "target": "http://transcript-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570400746,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570494777,
+          "target": "http://payment-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570494950,
+          "target": "http://payment-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570495908,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570496002,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570554402,
+          "target": "http://auth-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570554403,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570554404,
+          "target": "http://payment-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570554407,
+          "target": "http://student-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570554408,
+          "target": "http://timetable-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570554408,
+          "target": "http://timetable-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570554410,
+          "target": "http://student-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570555329,
+          "target": "http://auth-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570555620,
+          "target": "http://student-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570555623,
+          "target": "http://timetable-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570555624,
+          "target": "http://payment-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570555624,
+          "target": "http://timetable-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570555628,
+          "target": "http://student-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570555631,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570558067,
+          "target": "http://auth-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570558073,
+          "target": "http://student-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559284,
+          "target": "http://timetable-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559288,
+          "target": "http://timetable-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559292,
+          "target": "http://auth-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559293,
+          "target": "http://student-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559293,
+          "target": "http://payment-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559295,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559297,
+          "target": "http://student-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559399,
+          "target": "http://payment-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559399,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559400,
+          "target": "http://student-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559400,
+          "target": "http://timetable-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570559402,
+          "target": "http://timetable-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570614881,
+          "target": "http://payment-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570614881,
+          "target": "http://student-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570614972,
+          "target": "http://payment-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570614973,
+          "target": "http://student-2:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570640768,
+          "target": "http://student-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570640802,
+          "target": "http://student-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570640843,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570641787,
+          "target": "http://payment-2:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570674992,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570675101,
+          "target": "http://payment-1:3000",
+          "ok": false
+        },
+        {
+          "ts": 1794570676052,
+          "target": "http://payment-1:3000",
+          "ok": true
+        },
+        {
+          "ts": 1794570676126,
+          "target": "http://payment-1:3000",
+          "ok": true
+        }
+      ]
+    },
+    "alerts": [
+      {
+        "name": "DatabaseDown",
+        "fired": true,
+        "detectionMs": 127061,
+        "resolvedAfterRepairMs": -126127,
+        "firstPendingTs": 1794570316848,
+        "firstFiringTs": 1794570321059,
+        "resolvedTs": 1794570597871
+      },
+      {
+        "name": "DatabaseFailover",
+        "fired": true,
+        "detectionMs": 125060,
+        "resolvedAfterRepairMs": -107127,
+        "firstPendingTs": 1794570318848,
+        "firstFiringTs": 1794570319058,
+        "resolvedTs": 1794570616871
+      },
+      {
+        "name": "DatabaseNoWriter",
+        "fired": false,
+        "detectionMs": null,
+        "resolvedAfterRepairMs": null,
+        "firstPendingTs": 1794570314848,
+        "firstFiringTs": null,
+        "resolvedTs": null
+      },
+      {
+        "name": "DatabaseRedundancyLost",
+        "fired": true,
+        "detectionMs": 135062,
+        "resolvedAfterRepairMs": -126127,
+        "firstPendingTs": 1794570318848,
+        "firstFiringTs": 1794570329060,
+        "resolvedTs": 1794570597871
+      },
+      {
+        "name": "HighErrorRate",
+        "fired": true,
+        "detectionMs": 375325,
+        "resolvedAfterRepairMs": -150674,
+        "firstPendingTs": 1794570562848,
+        "firstFiringTs": 1794570569323,
+        "resolvedTs": 1794570573324
+      },
+      {
+        "name": "InstanceDown",
+        "fired": true,
+        "detectionMs": 67028,
+        "resolvedAfterRepairMs": -81100,
+        "firstPendingTs": 1794570194848,
+        "firstFiringTs": 1794570261026,
+        "resolvedTs": 1794570642898
+      }
+    ],
+    "resources": [
+      {
+        "name": "final_fault-auth-1-1",
+        "maxCpuPct": 17.92,
+        "maxMemMiB": 71.2,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-db-backup-1",
+        "maxCpuPct": 27.43,
+        "maxMemMiB": 5.602,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-db-controller-1",
+        "maxCpuPct": 18.3,
+        "maxMemMiB": 53.38,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-gateway-1-1",
+        "maxCpuPct": 53.36,
+        "maxMemMiB": 64.52,
+        "samples": 274
+      },
+      {
+        "name": "final_fault-gateway-2-1",
+        "maxCpuPct": 74.97,
+        "maxMemMiB": 120.6,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-grafana-1",
+        "maxCpuPct": 3.11,
+        "maxMemMiB": 46.88,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-nginx-1",
+        "maxCpuPct": 7.43,
+        "maxMemMiB": 10.88,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-payment-1-1",
+        "maxCpuPct": 28.25,
+        "maxMemMiB": 56.26,
+        "samples": 275
+      },
+      {
+        "name": "final_fault-payment-2-1",
+        "maxCpuPct": 70.96,
+        "maxMemMiB": 55.8,
+        "samples": 274
+      },
+      {
+        "name": "final_fault-postgres-exporter-1",
+        "maxCpuPct": 4.24,
+        "maxMemMiB": 15.34,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-postgres-exporter-replica-1",
+        "maxCpuPct": 3.17,
+        "maxMemMiB": 12.41,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-postgres-primary-1",
+        "maxCpuPct": 29.7,
+        "maxMemMiB": 167.5,
+        "samples": 275
+      },
+      {
+        "name": "final_fault-postgres-replica-1",
+        "maxCpuPct": 29.08,
+        "maxMemMiB": 138.1,
+        "samples": 275
+      },
+      {
+        "name": "final_fault-prometheus-1",
+        "maxCpuPct": 4.23,
+        "maxMemMiB": 59.69,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-student-1-1",
+        "maxCpuPct": 57.73,
+        "maxMemMiB": 57.31,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-student-2-1",
+        "maxCpuPct": 29.88,
+        "maxMemMiB": 57.26,
+        "samples": 274
+      },
+      {
+        "name": "final_fault-timetable-1-1",
+        "maxCpuPct": 16.51,
+        "maxMemMiB": 56.41,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-timetable-2-1",
+        "maxCpuPct": 16.34,
+        "maxMemMiB": 56.5,
+        "samples": 287
+      },
+      {
+        "name": "final_fault-transcript-1-1",
+        "maxCpuPct": 23.55,
+        "maxMemMiB": 66.11,
+        "samples": 287
+      }
+    ]
+  },
+  "consistency": {
+    "paymentRequestsSent": 20621,
+    "paymentRequestsAccepted": 20424,
+    "paymentRequestsRateLimited": 0,
+    "distinctPaymentIntents": 17171,
+    "acknowledgedIntents": 17011,
+    "deduplicatedResponses": 3413,
+    "ackedNotCompleted": 1,
+    "ackedNotCompletedByState": {
+      "pending": 1
+    },
+    "ackedNotCompletedIntents": 1,
+    "duplicateCharges": 0,
+    "duplicateChargesClient": 0,
+    "duplicateChargesDb": 0,
+    "unacknowledgedIntents": 160,
+    "integrityBasis": "idempotency-key",
+    "lostRecords": 0,
+    "lostIntents": [],
+    "phantomRecords": 0,
+    "dbRows": 17012,
+    "ledgerMeasured": true,
+    "completedInDb": 17011,
+    "dbVsIntents": -160,
+    "orphanedPending": 0,
+    "rolledBack": 1,
+    "failedPay": 0,
+    "totalCharged": 1701100,
+    "ledgerBalanced": true
+  },
+  "verify": {
+    "faults": [
+      {
+        "name": "app-crash student-1",
+        "injectTs": 1794570194000,
+        "repairTs": 1794570219001
+      },
+      {
+        "name": "node-kill payment-1",
+        "injectTs": 1794570253998,
+        "repairTs": 1794570279021
+      },
+      {
+        "name": "db-primary-stop",
+        "injectTs": 1794570313998,
+        "repairTs": 1794570338998
+      },
+      {
+        "name": "node-kill gateway-1",
+        "injectTs": 1794570373998,
+        "repairTs": 1794570398998
+      },
+      {
+        "name": "slow student-2 (3 s)",
+        "injectTs": 1794570433998,
+        "repairTs": 1794570459000
+      },
+      {
+        "name": "app-crash payment-2",
+        "injectTs": 1794570493999,
+        "repairTs": 1794570518999
+      },
+      {
+        "name": "db-primary-stop (again)",
+        "injectTs": 1794570553998,
+        "repairTs": 1794570578999
+      },
+      {
+        "name": "node-kill student-2 + payment-2",
+        "injectTs": 1794570613997,
+        "repairTs": 1794570638997
+      },
+      {
+        "name": "payment-1 crashes mid-transaction",
+        "injectTs": 1794570673998,
+        "repairTs": 1794570698998
+      }
+    ],
+    "repairAfterMs": 25000,
+    "db": {
+      "writer": "postgres-primary",
+      "standbys": 1,
+      "timeline": 11,
+      "sync": true
+    }
+  },
+  "acceptance": [
+    {
+      "id": "availability-ge-99.5pct",
+      "describe": "request-based availability >= 99.5 %",
+      "pass": true
+    },
+    {
+      "id": "write-availability-ge-98pct",
+      "describe": "payment (write) availability >= 98 %",
+      "pass": true
+    },
+    {
+      "id": "bad-seconds-le-30",
+      "describe": "at most 30 seconds with fewer than 99 % of requests successful",
+      "pass": true
+    },
+    {
+      "id": "duplicates-eq-0",
+      "describe": "no duplicate charge (DB and client side)",
+      "pass": true
+    },
+    {
+      "id": "lost-eq-0",
+      "describe": "no acknowledged payment missing from the DB",
+      "pass": true
+    },
+    {
+      "id": "ledger-balanced",
+      "describe": "sum of completed payments equals the sum of student balances",
+      "pass": true
+    },
+    {
+      "id": "standby-streaming-at-end",
+      "describe": "at the end of the run a primary accepts writes and a standby streams from it (redundancy restored)",
+      "pass": true
+    }
+  ]
+}

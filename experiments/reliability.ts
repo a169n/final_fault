@@ -131,7 +131,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (recs.length === 0) { console.error(`! ${tag}: no workload log, skipped`); continue; }
     loaded.push({ run, recs, all: reliabilityOf(binRecs(recs, run.t0)), writes: reliabilityOf(binRecs(recs, run.t0, WRITES)) });
   }
-  const scenarios = [...new Set(loaded.map((l) => l.run.scenario))];
+  const ORDER = ['app-crash', 'db-failure', 'net-timeout', 'node-failure', 'txn-interrupt', 'high-load', 'gateway-failure', 'error-spike',
+    'unauthorized-access', 'abuse', 'data-loss', 'soak', 'standby-failure'];
+  const rank = (x: string) => (ORDER.indexOf(x) < 0 ? ORDER.length : ORDER.indexOf(x));
+  const scenarios = [...new Set(loaded.map((l) => l.run.scenario))].sort((a, b) => rank(a) - rank(b));
   const modes = [...new Set(loaded.map((l) => l.run.mode))].sort((a, b) => MODE_ORDER.indexOf(a) - MODE_ORDER.indexOf(b));
   const of = (s: string, m: string) => loaded.filter((l) => l.run.scenario === s && l.run.mode === m);
 
