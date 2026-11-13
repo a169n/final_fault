@@ -29,7 +29,23 @@ pytestmark = pytest.mark.integration
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 STACK_URL = os.environ.get("STACK_URL", "http://localhost:8080")       # nginx, the public entry point
 DB_HOST = os.environ.get("STACK_DB_HOST", "127.0.0.1")
-DB_PORT = int(os.environ.get("STACK_DB_PORT", "55432"))                  # postgres-primary, host-only
+CONTROLLER_URL = os.environ.get("CONTROLLER_URL", "http://localhost:3061")
+_NODE_PORTS = {"postgres-primary": 55432, "postgres-replica": 55433}     # host-only
+
+
+def _writer_port() -> int:
+    """The host port of the node that accepts writes. After a failover (final) that is not
+    postgres-primary, so the port is asked from the database controller, not assumed."""
+    if os.environ.get("STACK_DB_PORT"):
+        return int(os.environ["STACK_DB_PORT"])
+    try:
+        writer = httpx.get(f"{CONTROLLER_URL}/health", timeout=3).json().get("writer")
+        return _NODE_PORTS.get(writer, 55432)
+    except Exception:
+        return 55432
+
+
+DB_PORT = _writer_port()
 EVENTS = ROOT / "logs" / "events.jsonl"                                   # every service appends here
 STACK_REQUIRED = os.environ.get("STACK_REQUIRED") == "1"
 

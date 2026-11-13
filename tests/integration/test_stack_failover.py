@@ -157,9 +157,11 @@ def test_primary_failure_promotes_the_standby_and_loses_no_acknowledged_payment(
         assert after["nodes"][after["writer"]]["timeline"] > before["nodes"][old_writer]["timeline"]
         assert recovery_s < 20
 
-        # every payment acknowledged before the failure is on the new primary: same key -> stored result, no new charge
+        # Every payment acknowledged before the failure is on the new primary: same key -> stored
+        # result, no new charge. The payment pool's circuit breaker may still be open for a few
+        # seconds after the promotion (it opened during the outage), so a 503 is retried briefly.
         for key in acked:
-            res = _pay(token, key)
+            res = _wait(lambda: (r := _pay(token, key)).status_code != 503 and r, 15, f"an answer for {key}")
             assert res.status_code == 200 and res.json()["state"] == "completed", (key, res.status_code, res.text)
     finally:
         _compose("start", old_writer)

@@ -57,8 +57,9 @@ STANDBY_STREAMING = Gauge("db_standby_streaming", "Standbys streaming from the c
 SYNC_REPLICATION = Gauge("db_sync_replication", "Synchronous replication is on at the writer (1).")
 FAILOVERS = Counter("db_failovers_total", "Standby promotions performed by the controller.")
 FAILOVER_REFUSED = Counter("db_failover_refused_total", "Promotions refused, by reason.", ["reason"])
-BACKUP_LAST = Gauge("backup_last_success_timestamp_seconds", "Finish time of the newest verified backup.")
-BACKUP_SIZE = Gauge("backup_last_size_bytes", "Size of the newest verified backup.")
+# Registered on the first backup seen: an unlabelled gauge is exported as 0 from the moment it is
+# created, and "last backup at time 0" would make BackupStale fire in every mode without backups.
+_backup_gauges: Optional[Tuple[Gauge, Gauge]] = None
 
 
 def _nodes_from_env() -> Dict[str, str]:
@@ -196,8 +197,13 @@ def _export(states: Dict[str, Optional[NodeState]]) -> None:
     SYNC_REPLICATION.set(1 if writer_state and writer_state.sync_names != "" else 0)
     try:  # written by the backup sidecar; absent when backups are off, and then the series stays absent
         latest = json.loads(BACKUP_STATUS.read_text())
-        BACKUP_LAST.set(latest["finishedMs"] / 1000)
-        BACKUP_SIZE.set(latest["sizeBytes"])
+        global _backup_gauges
+        if _backup_gauges is None:
+            _backup_gauges = (
+                Gauge("backup_last_success_timestamp_seconds", "Finish time of the newest verified backup."),
+                Gauge("backup_last_size_bytes", "Size of the newest verified backup."))
+        _backup_gauges[0].set(latest["finishedMs"] / 1000)
+        _backup_gauges[1].set(latest["sizeBytes"])
     except Exception:
         pass
 
