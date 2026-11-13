@@ -339,14 +339,15 @@ function dataLoss(): Scenario {
       wipeTs = Date.now();
       await psql('TRUNCATE payments; UPDATE students SET balance = 0;');
     },
-    repair: async () => { restore = await restoreFromBackup(); },
+    // the operator knows when the records vanished (PaymentRecordsLost) and takes the last backup from before it
+    repair: async () => { restore = await restoreFromBackup({ beforeMs: wipeTs }); },
     expectedAlerts: { mustFire: ['PaymentRecordsLost'], mayFire: [] },
     acceptance: [
       criteria.alertDetectedWithin('PaymentRecordsLost', 20_000),
       criteria.restoreSucceeded(),
       criteria.lossWindowAtMost(20_000),
       criteria.ledgerBalanced(),
-      criteria.noDuplicateCharges(),
+      criteria.noDuplicateChargesInDb(),
       criteria.availabilityAtLeast(0.999),
     ],
     verify: async ({ recs }) => {

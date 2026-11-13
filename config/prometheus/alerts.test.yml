@@ -57,9 +57,9 @@ tests:
               job: postgres
               instance: postgres-exporter:9187
             exp_annotations:
-              summary: "PostgreSQL primary is unreachable (pg_up == 0)"
+              summary: "PostgreSQL node behind postgres-exporter:9187 is unreachable (pg_up == 0)"
               threshold: "pg_up == 0 for 4s"
-              response: "Reads fail over to the hot standby and writes fail fast (midterm/endterm); the operator restores the primary. In baseline every DB-backed route fails."
+              response: "Reads fail over to the other node and writes fail fast (midterm/endterm); in final the controller promotes the standby. The operator restarts the node. In baseline every DB-backed route fails."
 
   - interval: 2s
     input_series:
@@ -212,4 +212,146 @@ tests:
     alert_rule_test:
       - eval_time: 12s
         alertname: PaymentsStuckPending
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- DatabaseNoWriter (final)
+  - interval: 2s
+    input_series:
+      - series: 'db_writer_available{job="university", instance="db-controller:3000"}'
+        values: '1 0x10'
+    alert_rule_test:
+      - eval_time: 4s          # pending
+        alertname: DatabaseNoWriter
+        exp_alerts: []
+      - eval_time: 8s          # first 0 at 2s, for (4s) + one interval
+        alertname: DatabaseNoWriter
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: university
+              instance: db-controller:3000
+            exp_annotations:
+              summary: "No PostgreSQL node accepts writes"
+              threshold: "db_writer_available == 0 for 4s"
+              response: "Final: the controller promotes the standby after 3 failed probes; if this keeps firing, promotion was refused (db_failover_refused_total) or both nodes are down. Other modes: the operator restores the primary."
+
+  - interval: 2s               # a failover that completes in under 4 s does not fire it
+    input_series:
+      - series: 'db_writer_available{job="university", instance="db-controller:3000"}'
+        values: '1 0 0 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 10s
+        alertname: DatabaseNoWriter
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- DatabaseRedundancyLost (final)
+  - interval: 2s
+    input_series:
+      - series: 'db_writer_available{job="university", instance="db-controller:3000"}'
+        values: '1x20'
+      - series: 'db_standby_streaming{job="university", instance="db-controller:3000"}'
+        values: '1 0x20'
+    alert_rule_test:
+      - eval_time: 10s         # pending (for is 10s)
+        alertname: DatabaseRedundancyLost
+        exp_alerts: []
+      - eval_time: 14s
+        alertname: DatabaseRedundancyLost
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: university
+              instance: db-controller:3000
+            exp_annotations:
+              summary: "The primary has no streaming standby: the database is a single point of failure"
+              threshold: "db_writer_available == 1 and db_standby_streaming == 0, for 10s"
+              response: "Restart the missing node (docker compose start <node>); it rejoins as a standby on its own. Until then a second database failure loses the write path, and synchronous replication is off."
+
+  - interval: 2s               # no writer at all is DatabaseNoWriter's case, not this one
+    input_series:
+      - series: 'db_writer_available{job="university", instance="db-controller:3000"}'
+        values: '0x20'
+      - series: 'db_standby_streaming{job="university", instance="db-controller:3000"}'
+        values: '0x20'
+    alert_rule_test:
+      - eval_time: 20s
+        alertname: DatabaseRedundancyLost
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- DatabaseFailover (final)
+  - interval: 2s
+    input_series:
+      - series: 'db_failovers_total{job="university", instance="db-controller:3000"}'
+        values: '0 0 0 1x60'
+    alert_rule_test:
+      - eval_time: 4s
+        alertname: DatabaseFailover
+        exp_alerts: []
+      - eval_time: 8s
+        alertname: DatabaseFailover
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: university
+              instance: db-controller:3000
+            exp_annotations:
+              summary: "The controller promoted the standby in the last minute"
+              threshold: "increase(db_failovers_total[1m]) > 0"
+              response: "Informational: writes moved to the other node. Find out why the old primary failed, then restart it so that it rejoins as a standby."
+      - eval_time: 90s         # more than a minute after the promotion: resolved
+        alertname: DatabaseFailover
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- BackupStale (final)
+  - interval: 2s
+    input_series:
+      - series: 'backup_last_success_timestamp_seconds{job="university", instance="db-controller:3000"}'
+        values: '0x60'         # the last backup finished at t = 0
+    alert_rule_test:
+      - eval_time: 58s
+        alertname: BackupStale
+        exp_alerts: []
+      - eval_time: 68s         # older than 60s, for (4s) + one interval
+        alertname: BackupStale
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: university
+              instance: db-controller:3000
+            exp_annotations:
+              summary: "No verified backup for more than 60s (the interval is 15s)"
+              threshold: "time() - backup_last_success_timestamp_seconds > 60, for 4s"
+              response: "Check the db-backup container log. The recovery point is getting older with every missed backup."
+
+  - interval: 2s               # no backup series at all (baseline, midterm, endterm): nothing to fire on
+    input_series:
+      - series: 'db_writer_available{job="university", instance="db-controller:3000"}'
+        values: '1x60'
+    alert_rule_test:
+      - eval_time: 100s
+        alertname: BackupStale
+        exp_alerts: []
+
+  # ---------------------------------------------------------------- PaymentRecordsLost (final)
+  - interval: 2s
+    input_series:
+      - series: 'payments_completed_rows{job="university", instance="payment-1:3000"}'
+        values: '100 120 140 160 180 200 220 0 0 0 5 10 15 20 25 30 35 40'
+      - series: 'payments_completed_rows{job="university", instance="payment-2:3000"}'
+        values: '100 120 140 160 180 200 220 220 0 0 5 10 15 20 25 30 35 40'   # refreshed a little later
+    alert_rule_test:
+      - eval_time: 12s         # still growing
+        alertname: PaymentRecordsLost
+        exp_alerts: []
+      - eval_time: 16s         # both replicas report the empty table: max dropped below 10s ago
+        alertname: PaymentRecordsLost
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+            exp_annotations:
+              summary: "The number of completed payments went down"
+              threshold: "max(payments_completed_rows) is lower than 10s ago"
+              response: "The application cannot delete payments, so records were destroyed outside it (operator error, bad migration, compromised superuser). Stop writes if possible and restore from the newest backup: npm run db:restore."
+      - eval_time: 34s         # growing again for more than 10s: resolved
+        alertname: PaymentRecordsLost
         exp_alerts: []

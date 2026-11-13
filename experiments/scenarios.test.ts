@@ -41,7 +41,7 @@ function goodRun(over: Record<string, any> = {}): RunResult {
       alerts: ['InstanceDown', 'DatabaseDown', 'HighErrorRate', 'PaymentRecordsLost'].map((name) => ({ name, detectionMs: 6_000, resolvedAfterRepairMs: 10_000 })),
       resources: [{ name: 'gateway-1', maxCpuPct: 10, maxMemMiB: 80 }],
     },
-    consistency: { duplicateCharges: 0, lostRecords: 0, orphanedPending: 0, ledgerBalanced: true },
+    consistency: { duplicateCharges: 0, duplicateChargesDb: 0, lostRecords: 0, orphanedPending: 0, ledgerBalanced: true },
     alertCorrectness: { correct: true, missing: [], unexpected: [] },
     verify: {
       attacks: {

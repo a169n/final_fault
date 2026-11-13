@@ -213,6 +213,14 @@ export const criteria = {
         && isNum(d.dataLoss?.lossWindowMs) && d.dataLoss.lossWindowMs <= ms;
     },
   }),
+  // data-loss only: a payment acknowledged before the wipe and re-sent after it gets a second 201,
+  // because the row that would have deduplicated it was destroyed. The merge restores one row per
+  // key, so the database is the place to check that nobody was charged twice.
+  noDuplicateChargesInDb: (): Criterion => ({
+    id: 'db-duplicates-eq-0',
+    describe: 'no key is charged twice in the database after the restore',
+    check: (r) => r.consistency.duplicateChargesDb === 0,
+  }),
   badSecondsAtMost: (max: number): Criterion => ({
     id: `bad-seconds-le-${max}`,
     describe: `at most ${max} seconds with fewer than 99 % of requests successful`,

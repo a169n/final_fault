@@ -8,15 +8,15 @@ import { ATTACK_CATEGORIES, REJECTION_SEEDS, abuseSet, attackSet } from './attac
 import { dashboardUrl } from './snapshot.ts';
 import type { PromAlert } from './alerts.ts';
 
-test('the default demo order is the plan order, and every demo has an expectation for all three modes', () => {
-  assert.deepEqual(DEFAULT_ORDER, ['app-crash', 'db-failure', 'gateway-failure', 'unauthorized', 'abuse']);
-  for (const name of ['outlier', 'alerts', 'node-failure', 'timetable']) assert.ok(DEMOS.includes(name), name);
+test('the default demo order is the plan order, and every demo has an expectation for all four modes', () => {
+  assert.deepEqual(DEFAULT_ORDER, ['app-crash', 'db-failover', 'restore', 'gateway-failure', 'unauthorized', 'abuse']);
+  for (const name of ['db-failure', 'outlier', 'alerts', 'node-failure', 'timetable']) assert.ok(DEMOS.includes(name), name);
   for (const name of DEMOS) {
-    assert.deepEqual(Object.keys(EXPECT[name] ?? {}).sort(), ['baseline', 'endterm', 'midterm'], name);
+    assert.deepEqual(Object.keys(EXPECT[name] ?? {}).sort(), ['baseline', 'endterm', 'final', 'midterm'], name);
     for (const text of Object.values(EXPECT[name])) assert.ok(text.length > 10, `${name}: empty expectation`);
   }
-  // the spec minimum: at least 3 scenarios, including a service failure and a security test
-  assert.ok(DEFAULT_ORDER.length >= 3);
+  // the assignment's minimum: at least 4 scenarios, including a service failure and a security test
+  assert.ok(DEFAULT_ORDER.length >= 4);
   assert.ok(DEFAULT_ORDER.includes('gateway-failure') && DEFAULT_ORDER.includes('unauthorized'));
 });
 

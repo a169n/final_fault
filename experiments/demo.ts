@@ -1,4 +1,4 @@
-// Live demonstration (Task 18; script and expected output in reports/endterm/DEMO.md).
+// Live demonstration (Task 18; script and expected output in reports/final/DEMO.md).
 //   npm run demo                 the default order: app-crash, db-failure, gateway-failure, unauthorized, abuse
 //   npm run demo -- full         every demo below
 //   npm run demo -- <name>       one demo: app-crash | db-failure | gateway-failure | unauthorized | abuse |
@@ -20,6 +20,7 @@ import { fetchAlerts, type PromAlert } from './alerts.ts';
 import { isMode, type Mode } from './env.ts';
 import { dashboardUrl } from './snapshot.ts';
 import { login } from './workload.ts';
+import { dbWriter, restoreFromBackup } from './restore.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const EVENTS_PATH = `${ROOT}logs/events.jsonl`;
@@ -35,57 +36,79 @@ const HEALTH_PORTS: Record<string, number> = {
 
 // ---------------------------------------------------------------- pure helpers (unit-tested)
 
-export const DEFAULT_ORDER = ['app-crash', 'db-failure', 'gateway-failure', 'unauthorized', 'abuse'];
-export const DEMOS = [...DEFAULT_ORDER, 'outlier', 'alerts', 'node-failure', 'timetable'];
+export const DEFAULT_ORDER = ['app-crash', 'db-failover', 'restore', 'gateway-failure', 'unauthorized', 'abuse'];
+export const DEMOS = [...DEFAULT_ORDER, 'db-failure', 'outlier', 'alerts', 'node-failure', 'timetable'];
 
 // What each demo should show in each mode. Printed before the demo runs; these are expectations from
-// the design (reports/endterm/DEMO.md), not measurements.
+// the design (reports/final/DEMO.md), not measurements.
 export const EXPECT: Record<string, Record<Mode, string>> = {
   'app-crash': {
     baseline: 'student-1 stays down (restart policy "no"); about half of the reads fail (round robin onto a dead replica)',
     midterm: 'health check + retry hide the crash (2xx); the restart policy brings student-1 back',
     endterm: 'as midterm: 2xx throughout; student-1 restarts on its own',
+    final: 'as endterm: 2xx throughout; student-1 restarts on its own',
   },
   'db-failure': {
     baseline: 'reads and writes fail (5xx or 000) while the primary is down',
     midterm: 'reads from the standby (200) or stale cache (203); payments fail fast (503) instead of hanging',
     endterm: 'as midterm; DatabaseDown fires within about 10 s (see the alerts demo)',
+    final: 'reads stay 200; payments fail for a few seconds, then succeed again on the promoted standby (see db-failover for the timeline)',
   },
   'gateway-failure': {
     baseline: 'nginx has only gateway-1: every request fails (502/000) until it is started again',
     midterm: 'same as baseline: the single gateway is a single point of failure (502/000)',
     endterm: 'nginx fails over to gateway-2: the per-second histogram stays 2xx',
+    final: 'as endterm: nginx fails over to gateway-2, the histogram stays 2xx',
   },
   unauthorized: {
     baseline: 'no authentication: every attack is ACCEPTED (2xx) and the attacker payments reach the DB; no audit lines',
     midterm: 'same as baseline: ACCEPTED, attacker payments reach the DB, no audit lines',
     endterm: 'no token / forged / expired / alg:none -> 401, s7 paying for s8 -> 403; one audit deny line per rid; DB unchanged',
+    final: 'as endterm: 401 / 403, one audit deny line per rid, DB unchanged',
   },
   abuse: {
     baseline: 'no validation or limits: some malformed bodies are accepted (2xx) or crash a handler (5xx); the burst is all 200; brute force all 401',
     midterm: 'same as baseline (no validation, no rate limiting)',
     endterm: 'malformed -> 422/400/413, never 5xx; burst -> 429 with Retry-After; brute force -> 429 after 5-10 tries; every instance stays healthy',
+    final: 'as endterm: 422/400/413, 429 with Retry-After, every instance stays healthy',
   },
   outlier: {
     baseline: 'no timeout: every request that lands on student-1 takes about 3 s; nothing is ejected',
     midterm: 'each request on student-1 pays the 800 ms attempt timeout before the retry; nothing is ejected (pool-level breaker only)',
     endterm: 'after 3 consecutive timeouts student-1 is ejected (instance_ejected=1 on the gateways) and latency drops back; it is re-probed after 10 s',
+    final: 'as endterm: student-1 is ejected after 3 timeouts and latency drops back',
   },
   alerts: {
     baseline: 'DatabaseDown fires (monitoring runs in every mode); HighErrorRate likely fires too (reads fail)',
     midterm: 'DatabaseDown fires; HighErrorRate may fire (payments fail, reads are served)',
     endterm: 'DatabaseDown fires; HighErrorRate may fire (payments fail, reads are served)',
+    final: 'DatabaseDown and DatabaseFailover fire; DatabaseRedundancyLost fires until the old primary has rejoined',
   },
   'node-failure': {
     baseline: 'about half of the requests fail while student-1 and payment-1 are dead; they stay down',
     midterm: 'the surviving node carries everything: 2xx throughout',
     endterm: 'as midterm: 2xx throughout',
+    final: 'as endterm: 2xx throughout',
   },
   timetable: {
     baseline: 'the job stays "running" forever at its last progress after the owner crashes',
     midterm: 'the job resumes from its last checkpoint on the other replica and reaches done',
     endterm: 'as midterm (the job is started with an admin token)',
+    final: 'as endterm: the job resumes on the other replica and reaches done',
   },
+};
+
+EXPECT['db-failover'] = {
+  baseline: 'every payment fails from the stop until the operator starts the primary again (about 20 s here)',
+  midterm: 'payments fail fast (503) until the operator starts the primary again; reads are served by the standby',
+  endterm: 'as midterm: no automatic promotion, payments are down until the repair',
+  final: 'payments fail for about 5 s, then the controller promotes the standby and they succeed again with the primary still down; the old primary rejoins as a standby when it is started',
+};
+EXPECT.restore = {
+  baseline: 'no backups are taken: the destroyed payments are gone for good',
+  midterm: 'no backups are taken: the destroyed payments are gone for good',
+  endterm: 'no backups are taken (and the standby replicated the damage at once): the payments are gone',
+  final: 'PaymentRecordsLost fires; the last backup from before the damage is verified and merged back; only the payments of the last seconds before the damage are missing',
 };
 
 export function resolveDemo(arg: string | undefined): string[] | null {
@@ -227,7 +250,7 @@ type Ctx = { mode: Mode; tokens: Map<string, { token: string; at: number }> };
 // demo's requests go out without a token there. A failed login is printed and the requests go out
 // without a token, so the 401s show on screen instead of the demo stopping.
 async function tokenFor(ctx: Ctx, user: string): Promise<string | undefined> {
-  if (ctx.mode !== 'endterm') return undefined;
+  if (ctx.mode !== 'endterm' && ctx.mode !== 'final') return undefined;
   const cached = ctx.tokens.get(user);
   if (cached && Date.now() - cached.at < TOKEN_REUSE_MS) return cached.token;
   try {
@@ -367,6 +390,54 @@ async function dbFailure(ctx: Ctx) {
   console.log(`  after    ${await line(10)}`);
 }
 
+// H6: per-second view of payments while the primary is stopped and later started again.
+async function dbFailover(ctx: Ctx) {
+  const auth = await authHeaders(ctx);
+  const controller = async () => {
+    const h = await json('http://localhost:3061/health').catch(() => null);
+    return h ? `writer=${h.writer ?? 'NONE'} ${Object.entries(h.nodes ?? {}).map(([n, v]: [string, any]) => `${n}:${v.up ? v.role : 'down'}`).join(' ')}` : 'controller unreachable';
+  };
+  console.log(`  before   ${await controller()}`);
+  const offset = existsSync(EVENTS_PATH) ? statSync(EVENTS_PATH).size : 0;
+  const stopped = await dbWriter();
+  const t = traffic(auth, ['payments', 'students'], 4);
+  await timeline({
+    t0: Date.now(), seconds: 40, recs: t.recs,
+    actions: {
+      5: [`docker compose stop ${stopped}  (the node that accepts writes)`, () => dc('stop', stopped)],
+      25: [`docker compose start ${stopped}  (operator repair)`, () => dc('start', stopped)],
+    },
+    extra: controller,
+  });
+  await t.stop();
+  console.log(`  after    ${await controller()}`);
+  const events = readSince(offset).split('\n').filter((l) => l.includes('"kind": "failover"') && l.includes('db-controller')).slice(-4);
+  for (const l of events) { try { const e = JSON.parse(l); console.log(`    controller: ${e.action} ${e.node} (${e.reason})`); } catch { /* partial line */ } }
+}
+
+// H7: destroy the payment records, then restore the last backup from before the damage.
+async function restoreDemo(ctx: Ctx) {
+  const auth = await authHeaders(ctx);
+  const ledger = async () => (await psql("select count(*) filter (where state='completed'), coalesce(sum(amount) filter (where state='completed'),0), (select sum(balance) from students) from payments")).replace(/\|/g, ' / ');
+  console.log('  making 60 payments ...');
+  for (let i = 0; i < 60; i++) await request(auth, 'payments');
+  console.log(`  ledger   completed / charged / balances = ${await ledger()}`);
+  console.log('  waiting 17 s so that a backup contains them (the interval is 15 s) ...');
+  await sleep(17_000);
+  const wipeTs = Date.now();
+  await psql('TRUNCATE payments; UPDATE students SET balance = 0;');
+  console.log('  >> TRUNCATE payments; UPDATE students SET balance = 0   (as the superuser: an operator error)');
+  console.log(`  ledger   completed / charged / balances = ${await ledger()}`);
+  await sleep(12_000);
+  for (const line of describeAlerts(await fetchAlerts(PROM).catch(() => []))) console.log(`  alert    ${line}`);
+  const report = await restoreFromBackup({ beforeMs: wipeTs });
+  console.log(`  >> npm run db:restore -- --before ${new Date(wipeTs).toISOString()}`);
+  console.log(`  restore  ${report.ok ? 'ok' : `FAILED: ${report.error}`}` + (report.ok
+    ? `: ${report.file}, checksum ${report.checksumOk ? 'ok' : 'BAD'}, ${report.scratch?.completed} completed payments in the backup, ` +
+      `${report.merged?.paymentsInserted} merged back, ${report.durationMs} ms` : ''));
+  console.log(`  ledger   completed / charged / balances = ${await ledger()}`);
+}
+
 async function gatewayFailure(ctx: Ctx) {
   const auth = await authHeaders(ctx);
   const t0 = Date.now();
@@ -425,7 +496,7 @@ async function unauthorized(ctx: Ctx) {
   const offset = eventsSize();
   const results: SentResult[] = [];
   console.log(`  each attack is POST /api/payments {studentId: "s8", amount: ${ATTACK_AMOUNT}}`);
-  if (ctx.mode !== 'endterm') console.log(`  (${ctx.mode}: no login, so the s7 attack goes out without a token as well)`);
+  if (ctx.mode !== 'endterm' && ctx.mode !== 'final') console.log(`  (${ctx.mode}: no login, so the s7 attack goes out without a token as well)`);
   for (const req of picks) {
     const r = await sendOne(GW, req);
     results.push(r);
@@ -434,7 +505,7 @@ async function unauthorized(ctx: Ctx) {
   await sleep(1000);  // let the gateways' audit lines reach the shared log
   const audit = auditFor(readSince(offset), new Set(picks.map((r) => r.rid)));
   console.log(`  audit lines for these rids (${EVENTS_PATH.replace(ROOT, '')}):`);
-  if (audit.length === 0) console.log(`    (none${ctx.mode === 'endterm' ? '' : `: ${ctx.mode} has no policy enforcement point`})`);
+  if (audit.length === 0) console.log(`    (none${ctx.mode === 'endterm' || ctx.mode === 'final' ? '' : `: ${ctx.mode} has no policy enforcement point`})`);
   for (const e of audit) console.log(`    ${formatAudit(e)}`);
   const after = await countAttackPayments();
   const delta = before !== null && after !== null ? after - before : null;
@@ -562,6 +633,8 @@ async function timetable(ctx: Ctx) {
 const RUN: Record<string, { title: string; run: (ctx: Ctx) => Promise<void> }> = {
   'app-crash': { title: 'Application crash: student-1 kills its own process', run: appCrash },
   'db-failure': { title: 'Database failure: the PostgreSQL primary is stopped', run: dbFailure },
+  'db-failover': { title: 'Database failover: the primary is stopped under live payments', run: dbFailover },
+  restore: { title: 'Data loss and restore: payment records destroyed, then restored from backup', run: restoreDemo },
   'gateway-failure': { title: 'Gateway failure: gateway-1 is killed under live traffic', run: gatewayFailure },
   unauthorized: { title: 'Unauthorized access: missing, forged, expired and alg:none tokens; s7 pays for s8', run: unauthorized },
   abuse: { title: 'Abuse: malformed input, request burst, login brute force', run: abuse },
@@ -591,7 +664,7 @@ async function main(): Promise<void> {
   }
   const mode = modeOf(await json(`${GW}/health`));
   if (!mode) {
-    console.log('deployed mode: not running -- start one with npm run up:baseline | up:midterm | up:endterm');
+    console.log('deployed mode: not running -- start one with npm run up:baseline | up:midterm | up:endterm | up:final');
     process.exit(1);
   }
   console.log(`deployed mode: ${bold(mode)}   Grafana ${GRAFANA}/d/university   Prometheus ${PROM}/alerts`);

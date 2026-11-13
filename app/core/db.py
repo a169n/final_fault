@@ -28,7 +28,7 @@ _replica = (
 )
 
 
-# H6 (final): which node takes the writes. Index into _nodes; 0 is the configured primary. The other
+# H6 (final): which node takes the writes. Index into _node_pools(); 0 is the configured primary. The other
 # modes never change it, so they keep writing to DATABASE_URL exactly as before.
 def _node_pools() -> List[AsyncConnectionPool]:
     return [_primary] + ([_replica] if _replica is not None else [])

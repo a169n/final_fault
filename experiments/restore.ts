@@ -1,7 +1,10 @@
 // Restore from the newest backup (H7). An operator action, run as the superuser over docker exec.
 //   npm run db:restore                 verify + merge the newest backup into the live database
 //   npm run db:restore -- --verify     verify only: checksum, restore into a scratch database, check it
+//   npm run db:restore -- --before 2026-11-13T10:26:20Z   the newest backup taken before that time
 //   npm run db:restore -- --file backups/university-....dump
+// After a data-loss incident use --before with the time of the incident (the PaymentRecordsLost
+// alert gives it): a backup taken after the damage contains the damage.
 //
 // Steps:
 //   1. checksum   the SHA-256 written next to the dump must match
@@ -61,9 +64,11 @@ function run(cmd: string, args: string[], input?: Buffer): Promise<string> {
 const inNode = (node: string, script: string, input?: Buffer) =>
   run('docker', ['compose', 'exec', '-T', node, 'bash', '-c', `set -euo pipefail; ${script}`], input);
 
-export function newestBackup(dir: string = BACKUP_DIR): string | null {
+// The newest backup, or with `beforeMs` the newest one whose snapshot was taken before that time.
+export function newestBackup(dir: string = BACKUP_DIR, beforeMs?: number): string | null {
   if (!existsSync(dir)) return null;
-  const dumps = readdirSync(dir).filter((f) => /^university-.*\.dump$/.test(f)).sort();
+  const dumps = readdirSync(dir).filter((f) => /^university-.*\.dump$/.test(f)).sort()
+    .filter((f) => beforeMs == null || (backupTakenMs(f) ?? Infinity) < beforeMs);
   return dumps.length ? join(dir, dumps[dumps.length - 1]) : null;
 }
 
@@ -98,15 +103,15 @@ UPDATE students s SET balance = coalesce(
 DROP TABLE _restore_students, _restore_payments;
 COMMIT;`;
 
-export async function restoreFromBackup(opts: { file?: string; merge?: boolean } = {}): Promise<RestoreReport> {
+export async function restoreFromBackup(opts: { file?: string; merge?: boolean; beforeMs?: number } = {}): Promise<RestoreReport> {
   const started = Date.now();
   const report: RestoreReport = {
     ok: false, file: null, backupFinishedMs: null, checksumOk: false, scratch: null, merged: null,
     durationMs: 0, writer: null,
   };
   try {
-    const file = opts.file ? resolve(opts.file) : newestBackup();
-    if (!file || !existsSync(file)) throw new Error('no backup found in backups/ (backups run only in final mode)');
+    const file = opts.file ? resolve(opts.file) : newestBackup(BACKUP_DIR, opts.beforeMs);
+    if (!file || !existsSync(file)) throw new Error(`no backup found in backups/${opts.beforeMs ? ' from before the given time' : ''} (backups run only in final mode)`);
     report.file = basename(file);
     report.backupFinishedMs = backupTakenMs(file);
     report.checksumOk = checksumOk(file);
@@ -146,7 +151,14 @@ export async function restoreFromBackup(opts: { file?: string; merge?: boolean }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const argv = process.argv.slice(2);
   const fileIdx = argv.indexOf('--file');
+  const beforeIdx = argv.indexOf('--before');
+  const beforeMs = beforeIdx >= 0 ? Date.parse(argv[beforeIdx + 1]) : undefined;
+  if (beforeIdx >= 0 && !Number.isFinite(beforeMs)) {
+    console.log('--before needs a time, e.g. 2026-11-13T10:26:20Z');
+    process.exit(1);
+  }
   const report = await restoreFromBackup({
+    beforeMs,
     file: fileIdx >= 0 ? argv[fileIdx + 1] : undefined,
     merge: !argv.includes('--verify'),
   });
