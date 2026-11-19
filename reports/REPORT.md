@@ -2,6 +2,8 @@
 
 Course: Fault Tolerance and Dependable Computing — Midterm project
 
+Team members: Aibyn Talgatov, Gani Uapov, Alemzhan Makhambetov, Asset Alibek
+
 Every number in this report comes from the raw logs in `logs/` or from a
 calculation shown next to it. The per-run reports, the comparison and
 the methodology are in `reports/`; this document ties them to the dependability
