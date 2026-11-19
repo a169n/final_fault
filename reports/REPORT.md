@@ -2,8 +2,6 @@
 
 Course: Fault Tolerance and Dependable Computing — Midterm project
 
-Team: Aibyn Talgatov, CSE-2505M (`a169n`) and Gani Uapov, CSE-2502M (`9an1`). Who did what is in §14.4.
-
 Every number in this report comes from the raw logs in `logs/` or from a
 calculation shown next to it. The per-run reports, the comparison and
 the methodology are in `reports/`; this document ties them to the dependability
